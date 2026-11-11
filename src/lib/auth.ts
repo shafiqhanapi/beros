@@ -3,51 +3,53 @@ import { cache } from "react";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { isSupabaseConfigured } from "@/lib/supabase/env";
+import { num, type CrewRow } from "@/lib/types";
 
 export type CrewRole = "crew" | "admin";
 export type CrewStatus = "invited" | "active" | "inactive";
 
-/** Columns of public.crew that the guards and layouts need (see SPEC.md SQL). */
-export interface CrewProfile {
-  id: string;
-  full_name: string;
-  email: string;
-  role: CrewRole;
-  status: CrewStatus;
-}
+/** The signed-in user's full public.crew row (see SPEC.md SQL). */
+export type CrewProfile = CrewRow;
 
 export type Session =
   | { state: "signed_out" }
   | { state: "no_profile"; email: string | undefined }
   | { state: "db_error"; email: string | undefined; message: string }
   | { state: "inactive"; crew: CrewProfile }
-  | { state: "ok"; crew: CrewProfile };
+  | { state: "ok"; crew: CrewProfile; userMetadata: Record<string, unknown> };
+
+const CREW_COLUMNS = "id, full_name, email, phone, role, status, hourly_rate, start_date, paynow_name, paynow_phone";
 
 /**
- * The signed-in user and their crew profile. Cached per request.
- * RLS (crew_self_read) lets a user read their own crew row.
+ * The signed-in user and their crew profile, loaded once per request.
+ * getClaims() verifies the login token locally (no call to Supabase Auth when
+ * the project uses asymmetric signing keys). RLS (crew_self_read) lets a user
+ * read their own crew row.
  */
 export const getSession = cache(async (): Promise<Session> => {
   if (!isSupabaseConfigured) return { state: "signed_out" };
 
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) return { state: "signed_out" };
+  const { data } = await supabase.auth.getClaims();
+  const claims = data?.claims;
+  if (!claims?.sub) return { state: "signed_out" };
+  const email = typeof claims.email === "string" ? claims.email : undefined;
 
-  const { data: crew, error } = await supabase
-    .from("crew")
-    .select("id, full_name, email, role, status")
-    .eq("id", user.id)
-    .maybeSingle<CrewProfile>();
+  const { data: crew, error } = await supabase.from("crew").select(CREW_COLUMNS).eq("id", claims.sub).maybeSingle<CrewRow>();
 
   // A failed query (missing table, missing grants) is not the same as "not on the crew list".
-  if (error) return { state: "db_error", email: user.email, message: `${error.code ?? ""} ${error.message}`.trim() };
-  if (!crew) return { state: "no_profile", email: user.email };
-  if (crew.status === "inactive") return { state: "inactive", crew };
-  return { state: "ok", crew };
+  if (error) return { state: "db_error", email, message: `${error.code ?? ""} ${error.message}`.trim() };
+  if (!crew) return { state: "no_profile", email };
+  const row = { ...crew, hourly_rate: num(crew.hourly_rate) };
+  if (row.status === "inactive") return { state: "inactive", crew: row };
+  return { state: "ok", crew: row, userMetadata: (claims.user_metadata as Record<string, unknown>) ?? {} };
 });
+
+/** user_metadata of the signed-in user (e.g. email_notifications). */
+export async function getUserMetadata(): Promise<Record<string, unknown>> {
+  const session = await getSession();
+  return session.state === "ok" ? session.userMetadata : {};
+}
 
 /** Where a session should land: the role's home, /login, or /no-access. */
 export function homeFor(session: Session): string {

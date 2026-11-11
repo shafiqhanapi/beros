@@ -20,17 +20,8 @@ import {
 
 const db = cache(createClient);
 
-export const getMe = cache(async (): Promise<CrewRow> => {
-  const profile = await requireCrew();
-  const supabase = await db();
-  const { data, error } = await supabase
-    .from("crew")
-    .select("id, full_name, email, phone, role, status, hourly_rate, start_date, paynow_name, paynow_phone")
-    .eq("id", profile.id)
-    .single<CrewRow>();
-  if (error || !data) throw new Error(`Could not load your profile: ${error?.message ?? "not found"}`);
-  return { ...data, hourly_rate: num(data.hourly_rate) };
-});
+/** The signed-in crew member's row; loaded once per request by the auth guard. */
+export const getMe = (): Promise<CrewRow> => requireCrew();
 
 const normEntry = (e: EntryRow): EntryRow => ({ ...e, hours: num(e.hours), rate: num(e.rate) });
 const normClaim = (c: ClaimRow): ClaimRow => ({ ...c, amount: num(c.amount) });

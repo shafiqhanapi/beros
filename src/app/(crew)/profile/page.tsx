@@ -4,15 +4,12 @@ import { Page, PageHeader } from "@/components/Page";
 import { cardClass, labelCaps, ListCard } from "@/components/ui";
 import { getMe } from "@/lib/data";
 import { fmtMoney, fmtMonthShort, fmtPhone, initials } from "@/lib/format";
-import { createClient } from "@/lib/supabase/server";
+import { getUserMetadata } from "@/lib/auth";
 import { NotificationsToggle } from "./NotificationsToggle";
 
 export default async function ProfilePage() {
-  const me = await getMe();
-  const {
-    data: { user },
-  } = await (await createClient()).auth.getUser();
-  const notifications = user?.user_metadata?.email_notifications !== false;
+  const [me, metadata] = await Promise.all([getMe(), getUserMetadata()]);
+  const notifications = metadata.email_notifications !== false;
   const isAdmin = me.role === "admin" && me.status === "active";
 
   return (

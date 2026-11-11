@@ -37,10 +37,11 @@ export async function updateSession(request: NextRequest) {
     },
   });
 
-  // Do not put code between createServerClient and getUser(): it refreshes the session.
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  // Do not put code between createServerClient and getClaims(): it refreshes the session.
+  // getClaims() verifies the token locally when the project uses asymmetric signing keys,
+  // so most requests don't wait on a call to Supabase Auth.
+  const { data } = await supabase.auth.getClaims();
+  const user = data?.claims?.sub ? data.claims : null;
 
   const { pathname } = request.nextUrl;
 

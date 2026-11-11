@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { Logo } from "@/components/Logo";
 import { SignOutButton } from "@/components/SignOutButton";
 import { requireAdmin } from "@/lib/auth";
@@ -17,6 +18,9 @@ export default async function AdminLayout({ children }: { children: React.ReactN
           </div>
           <div className="flex items-center gap-4">
             <span className="hidden text-sm text-muted sm:inline">{admin.full_name}</span>
+            <Link href="/home" className="rounded-lg border border-line bg-card px-4 py-2 text-sm font-medium hover:bg-page">
+              Crew view
+            </Link>
             <SignOutButton />
           </div>
         </div>

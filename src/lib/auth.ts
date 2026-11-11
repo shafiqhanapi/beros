@@ -56,14 +56,18 @@ export function homeFor(session: Session): string {
   return session.crew.role === "admin" ? "/admin" : "/home";
 }
 
-async function requireRole(role: CrewRole): Promise<CrewProfile> {
+async function requireRole(roles: CrewRole[]): Promise<CrewProfile> {
   const session = await getSession();
-  if (session.state !== "ok" || session.crew.role !== role) redirect(homeFor(session));
+  if (session.state !== "ok" || !roles.includes(session.crew.role)) redirect(homeFor(session));
   return session.crew;
 }
 
-/** Guard for the crew area: crew role, not deactivated. */
-export const requireCrew = () => requireRole("crew");
+/**
+ * Guard for the crew area: any signed-in crew member who isn't deactivated.
+ * Admins may use it too, to log their own hours and claims; RLS limits the
+ * crew screens' queries to the user's own rows either way.
+ */
+export const requireCrew = () => requireRole(["crew", "admin"]);
 
 /**
  * Guard for /admin. Requires role 'admin' and status 'active',
@@ -71,7 +75,7 @@ export const requireCrew = () => requireRole("crew");
  * screens that RLS would refuse.
  */
 export async function requireAdmin(): Promise<CrewProfile> {
-  const crew = await requireRole("admin");
+  const crew = await requireRole(["admin"]);
   if (crew.status !== "active") redirect("/no-access");
   return crew;
 }

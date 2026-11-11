@@ -13,6 +13,7 @@ export default async function ProfilePage() {
     data: { user },
   } = await (await createClient()).auth.getUser();
   const notifications = user?.user_metadata?.email_notifications !== false;
+  const isAdmin = me.role === "admin" && me.status === "active";
 
   return (
     <Page bottom="tabs">
@@ -25,7 +26,7 @@ export default async function ProfilePage() {
         <div className="flex min-w-0 flex-col gap-[3px]">
           <p className="truncate text-[17px] font-bold">{me.full_name}</p>
           <p className="text-[13px] leading-[18px] text-muted">
-            Professional Hygiene Crew
+            {isAdmin ? "Admin" : "Professional Hygiene Crew"}
             <br />
             Since {fmtMonthShort(me.start_date)}
           </p>
@@ -47,6 +48,7 @@ export default async function ProfilePage() {
           <span className="flex-1 text-sm font-medium">Email notifications</span>
           <NotificationsToggle initial={notifications} />
         </div>
+        {isAdmin && <Row label="Admin view" value="Review, payouts, crew" href="/admin" />}
       </Group>
 
       <form action="/auth/signout" method="post" className="-mt-1">

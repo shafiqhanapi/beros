@@ -1,9 +1,10 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
+import { ALIVE_COOKIE, REMEMBER_COOKIE } from "@/lib/remember";
 import { isSupabaseConfigured, SUPABASE_ANON_KEY, SUPABASE_URL } from "./env";
 
 /** Paths anyone can open without signing in. */
-const PUBLIC_PATHS = ["/login", "/auth"];
+const PUBLIC_PATHS = ["/login", "/auth", "/forgot-password"];
 
 const isPublic = (pathname: string) =>
   PUBLIC_PATHS.some((p) => pathname === p || pathname.startsWith(`${p}/`));
@@ -42,6 +43,15 @@ export async function updateSession(request: NextRequest) {
   } = await supabase.auth.getUser();
 
   const { pathname } = request.nextUrl;
+
+  // "Keep me signed in" was unticked and the browser has since been closed.
+  if (user && request.cookies.get(REMEMBER_COOKIE)?.value === "0" && !request.cookies.get(ALIVE_COOKIE)) {
+    await supabase.auth.signOut();
+    const redirect = NextResponse.redirect(new URL("/login", request.url));
+    response.cookies.getAll().forEach((c) => redirect.cookies.set(c));
+    redirect.cookies.delete(REMEMBER_COOKIE);
+    return redirect;
+  }
 
   if (!user && !isPublic(pathname)) {
     const url = request.nextUrl.clone();

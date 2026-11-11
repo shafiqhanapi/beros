@@ -1,8 +1,17 @@
-export function Logo({ className = "" }: { className?: string }) {
+import Image from "next/image";
+
+/** BEROS wordmark from Figma. `size="lg"` on auth screens, `"sm"` in app headers. */
+export function Logo({ size = "sm", className = "" }: { size?: "sm" | "lg"; className?: string }) {
+  const [w, h] = size === "lg" ? [141.749, 22] : [115.977, 18];
   return (
-    <span className={`inline-flex items-center gap-2 font-semibold tracking-tight ${className}`}>
-      <span className="grid h-8 w-8 place-items-center rounded-lg bg-ink text-sm text-white">B</span>
-      BEROS
-    </span>
+    <Image
+      src="/beros-logo.svg"
+      alt="BEROS"
+      width={w}
+      height={h}
+      priority
+      className={className}
+      style={{ width: w, height: h }}
+    />
   );
 }

@@ -1,0 +1,32 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Inter Variable", ui-sans-serif, system-ui, sans-serif;
+
+  --color-page: #f5f5f5;
+  --color-card: #ffffff;
+  --color-line: #e5e5e5;
+  --color-ink: #0a0a0a;
+  --color-muted: #737373;
+
+  /* Status pills: green paid/approved, amber pending/submitted, red rejected, grey draft */
+  --color-ok-bg: #dcfce7;
+  --color-ok-fg: #166534;
+  --color-wait-bg: #fef3c7;
+  --color-wait-fg: #92400e;
+  --color-bad-bg: #fee2e2;
+  --color-bad-fg: #991b1b;
+  --color-draft-bg: #f0f0f0;
+  --color-draft-fg: #525252;
+}
+
+html,
+body {
+  background: var(--color-page);
+  color: var(--color-ink);
+}
+
+body {
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}

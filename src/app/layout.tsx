@@ -5,6 +5,8 @@ import "./globals.css";
 export const metadata: Metadata = {
   title: "BEROS Crew Portal",
   description: "Log hours, submit claims and track your pay.",
+  applicationName: "BEROS Crew",
+  appleWebApp: { capable: true, title: "BEROS Crew", statusBarStyle: "default" },
 };
 
 export const viewport: Viewport = {

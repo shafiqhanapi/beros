@@ -14,6 +14,8 @@
 --      must be one of the crew member's own files.
 --   4. Receipt and payslip uploads have file size and type limits.
 --   5. The "To log" view respects row-level security.
+--   6. Fixes from Supabase's Security Advisor: a pinned search path, and the
+--      SECURITY DEFINER functions can't be called by signed-out visitors.
 --
 -- Admins (is_admin()) and the server (service role / SQL editor) are not
 -- restricted by these triggers.
@@ -159,5 +161,20 @@ where id = 'payslips';
 -- 5. "To log" view runs with the caller's permissions -------------------------
 
 alter view public.my_bookings_to_log set (security_invoker = true);
+
+-- 6. Supabase Security Advisor fixes ------------------------------------------
+
+-- Pin the search path of the booking-totals trigger function.
+alter function public.sync_booking_totals() set search_path = public;
+
+-- Signed-out visitors can't call the SECURITY DEFINER functions. Signed-in
+-- users still can: is_admin() is used by the RLS policies on every request,
+-- and update_my_contact() is how crew change their own phone and PayNow.
+revoke execute on function public.is_admin() from public, anon;
+revoke execute on function public.update_my_contact(text, text, text) from public, anon;
+grant execute on function public.is_admin() to authenticated, service_role;
+grant execute on function public.update_my_contact(text, text, text) to authenticated, service_role;
+revoke execute on function public.is_restricted_user() from public, anon;
+grant execute on function public.is_restricted_user() to authenticated, service_role;
 
 commit;

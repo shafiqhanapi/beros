@@ -192,3 +192,50 @@ export async function getPaidMonths(opts: { from?: string | null; to?: string | 
     };
   });
 }
+
+// ---------------------------------------------------------------------------
+// Assigned jobs (History tab)
+// ---------------------------------------------------------------------------
+
+export interface AssignedJob extends BookingSummary {
+  status: "scheduled" | "completed" | "cancelled";
+  hours: number | null; // null = not logged yet
+  pay: number;
+}
+
+/** Every booking assigned to the signed-in crew member since `from` (YYYY-MM-01), newest first. */
+export async function getAssignedJobs(from: string | null): Promise<AssignedJob[]> {
+  const me = await getMe();
+  const supabase = await db();
+  const { data: links } = await supabase.from("booking_crew").select("booking_id").eq("crew_id", me.id);
+  const ids = (links ?? []).map((l) => l.booking_id as string);
+  if (!ids.length) return [];
+
+  let q = supabase.from("bookings").select("id, scheduled_at, address, status").in("id", ids).neq("status", "cancelled").order("scheduled_at", { ascending: false });
+  if (from) q = q.gte("scheduled_at", `${from}T00:00:00+08:00`);
+  const { data: rows } = await q;
+  const bookings = (rows ?? []) as { id: string; scheduled_at: string; address: string; status: AssignedJob["status"] }[];
+  if (!bookings.length) return [];
+
+  const [titles, { data: entries }] = await Promise.all([
+    bookingTitles(bookings.map((b) => b.id)),
+    supabase
+      .from("timesheet_entries")
+      .select("booking_id, hours, rate, timesheets!inner(crew_id)")
+      .in("booking_id", bookings.map((b) => b.id))
+      .eq("timesheets.crew_id", me.id),
+  ]);
+  const logged = new Map<string, { hours: number; pay: number }>();
+  for (const e of entries ?? []) {
+    const t = logged.get(e.booking_id as string) ?? { hours: 0, pay: 0 };
+    t.hours += num(e.hours);
+    t.pay += num(e.hours) * num(e.rate);
+    logged.set(e.booking_id as string, t);
+  }
+  return bookings.map((b) => ({
+    ...b,
+    title: titles.get(b.id) ?? "Booking",
+    hours: logged.get(b.id)?.hours ?? null,
+    pay: logged.get(b.id)?.pay ?? 0,
+  }));
+}

@@ -3,9 +3,9 @@ import { createClient } from "@/lib/supabase/server";
 import { safePath } from "@/lib/safe-path";
 
 /**
- * Google sign-in and password-reset emails land here with ?code= to exchange
- * for a session. With open sign-ups disabled in Supabase, a Google account
- * that isn't on the crew list comes back with an error instead.
+ * Password-reset emails land here with ?code= to exchange for a session.
+ * (Invite links use /auth/accept.) Sign-in is email and password only;
+ * an error from Supabase sends the user back to /login with a message.
  */
 export async function GET(request: NextRequest) {
   const { searchParams, origin } = request.nextUrl;

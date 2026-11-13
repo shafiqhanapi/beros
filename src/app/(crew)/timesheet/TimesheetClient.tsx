@@ -126,15 +126,15 @@ export function TimesheetClient({
 
       <div className={`${cardClass} flex flex-col gap-4 p-5`}>
         <div className="flex items-center">
-          <span className="text-[13px] font-medium text-muted">Hours pay</span>
+          <span className="text-[13px] font-medium text-muted">Total Amount</span>
           <div className="flex-1" />
           <StatusPill status={status} />
         </div>
         <p className="text-[28px] font-bold">{fmtMoney(pay)}</p>
         <StatRow>
           <Stat label="Logged" value={`${jobs} ${jobs === 1 ? "job" : "jobs"}`} />
-          <Stat label="Hours" value={fmtHours(hours)} />
-          <Stat label="To log" value={`${toLog.length} ${toLog.length === 1 ? "job" : "jobs"}`} />
+          <Stat label="Total Hours" value={fmtHours(hours)} />
+          <Stat label="Assigned Jobs" value={`${toLog.length} ${toLog.length === 1 ? "job" : "jobs"}`} />
         </StatRow>
       </div>
 

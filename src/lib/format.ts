@@ -135,3 +135,7 @@ export const fmtPhone = (digits: string) => (digits.length > 4 ? `${digits.slice
 /** Exactly 8 digits starting with 8 or 9 (matches the database check). */
 export const isSgMobile = (digits: string) => /^[89]\d{7}$/.test(digits);
 export const PHONE_ERROR = "Enter a valid 8-digit Singapore mobile number";
+
+/** "11:00 am" for a timestamp, in SG time */
+export const fmtTimeTs = (ts: string) =>
+  new Intl.DateTimeFormat("en-SG", { hour: "numeric", minute: "2-digit", hour12: true, timeZone: TZ }).format(new Date(ts)).toLowerCase();

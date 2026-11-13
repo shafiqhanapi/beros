@@ -28,6 +28,7 @@ import {
   fmtMoney,
   fmtMonthName,
   fmtShortTs,
+  fmtTimeTs,
   monthEnd,
   sgDate,
 } from "@/lib/format";
@@ -175,7 +176,7 @@ export function TimesheetClient({
                 <div className="flex min-w-0 flex-1 flex-col gap-[3px]">
                   <p className="truncate text-sm font-semibold">{b.title}</p>
                   <p className="truncate text-xs text-muted">
-                    {fmtDayTs(b.scheduled_at)} · {b.address}
+                    {fmtDayTs(b.scheduled_at)}, {fmtTimeTs(b.scheduled_at)} · {b.address}
                   </p>
                 </div>
                 <button
@@ -328,7 +329,7 @@ function HoursSheet({
             <span className="text-[11px] font-semibold text-muted">Booked</span>
           </div>
           <p className="text-[13px] text-muted">
-            {fmtDayTsLong(booking.scheduled_at)} · {booking.address}
+            {fmtDayTsLong(booking.scheduled_at)}, {fmtTimeTs(booking.scheduled_at)} · {booking.address}
           </p>
         </div>
       ) : (

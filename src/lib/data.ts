@@ -2,7 +2,7 @@ import "server-only";
 import { cache } from "react";
 import { createClient } from "@/lib/supabase/server";
 import { requireCrew } from "@/lib/auth";
-import { addMonths, monthEnd, monthTsRange, periodStart, type Period } from "@/lib/format";
+import { monthEnd, monthTsRange } from "@/lib/format";
 import {
   num,
   type BookingSummary,
@@ -129,94 +129,6 @@ export async function getClaims(month: string): Promise<ClaimRow[]> {
     .order("claim_date", { ascending: false })
     .order("created_at", { ascending: false });
   return ((data ?? []) as ClaimRow[]).map(normClaim);
-}
-
-// ---------------------------------------------------------------------------
-// Home
-// ---------------------------------------------------------------------------
-
-export interface HomeSummary {
-  total: number;
-  hours: number;
-  jobs: number;
-  claims: number;
-}
-
-export type RecentItem =
-  | { kind: "timesheet"; id: string; month: string; status: TimesheetRow["status"]; pay: number; hours: number; sortKey: string }
-  | { kind: "claim"; id: string; claim: ClaimRow; sortKey: string };
-
-/** Approved (or paid) hours pay plus approved (or paid) claims within the period. */
-export async function getHomeSummary(period: Period): Promise<HomeSummary> {
-  const me = await getMe();
-  const supabase = await db();
-  const from = periodStart(period);
-
-  let tsQuery = supabase.from("timesheets").select("id").eq("crew_id", me.id).in("status", ["approved", "paid"]);
-  let clQuery = supabase.from("claims").select("amount").eq("crew_id", me.id).in("status", ["approved", "paid"]);
-  if (from) {
-    tsQuery = tsQuery.gte("month", from);
-    clQuery = clQuery.gte("claim_date", from);
-  }
-  const [{ data: sheets }, { data: claims }] = await Promise.all([tsQuery, clQuery]);
-
-  let hours = 0;
-  let pay = 0;
-  let jobs = 0;
-  const ids = (sheets ?? []).map((s) => s.id as string);
-  if (ids.length) {
-    const { data: entries } = await supabase.from("timesheet_entries").select("hours, rate, booking_id").in("timesheet_id", ids);
-    for (const e of entries ?? []) {
-      hours += num(e.hours);
-      pay += num(e.hours) * num(e.rate);
-      jobs += 1;
-    }
-  }
-  const claimsTotal = (claims ?? []).reduce((s, c) => s + num(c.amount), 0);
-  return { total: pay + claimsTotal, hours, jobs, claims: claimsTotal };
-}
-
-export async function getRecent(limit = 8): Promise<RecentItem[]> {
-  const me = await getMe();
-  const supabase = await db();
-  const [{ data: sheets }, { data: claims }] = await Promise.all([
-    supabase.from("timesheets").select("*").eq("crew_id", me.id).order("month", { ascending: false }).limit(limit),
-    supabase.from("claims").select("*").eq("crew_id", me.id).order("created_at", { ascending: false }).limit(limit),
-  ]);
-  const ts = (sheets ?? []) as TimesheetRow[];
-  const totals = new Map<string, { pay: number; hours: number }>();
-  if (ts.length) {
-    const { data: entries } = await supabase
-      .from("timesheet_entries")
-      .select("timesheet_id, hours, rate")
-      .in("timesheet_id", ts.map((t) => t.id));
-    for (const e of entries ?? []) {
-      const t = totals.get(e.timesheet_id) ?? { pay: 0, hours: 0 };
-      t.hours += num(e.hours);
-      t.pay += num(e.hours) * num(e.rate);
-      totals.set(e.timesheet_id, t);
-    }
-  }
-  const items: RecentItem[] = [
-    ...ts
-      .filter((t) => totals.has(t.id) || t.status !== "draft")
-      .map((t) => ({
-        kind: "timesheet" as const,
-        id: t.id,
-        month: t.month,
-        status: t.status,
-        pay: totals.get(t.id)?.pay ?? 0,
-        hours: totals.get(t.id)?.hours ?? 0,
-        sortKey: t.paid_at ?? t.reviewed_at ?? t.submitted_at ?? `${addMonths(t.month, 1)}T00:00:00Z`,
-      })),
-    ...((claims ?? []) as ClaimRow[]).map(normClaim).map((c) => ({
-      kind: "claim" as const,
-      id: c.id,
-      claim: c,
-      sortKey: c.reviewed_at ?? c.created_at,
-    })),
-  ];
-  return items.sort((a, b) => b.sortKey.localeCompare(a.sortKey)).slice(0, limit);
 }
 
 // ---------------------------------------------------------------------------

@@ -8,7 +8,7 @@ export function Page({
   wide = false,
 }: {
   children: React.ReactNode;
-  bottom?: "none" | "tabs" | "actions" | "tabs+actions";
+  bottom?: "none" | "tabs" | "actions" | "tabs+actions" | "tabs+row";
   wide?: boolean;
 }) {
   const pb = {
@@ -16,6 +16,7 @@ export function Page({
     tabs: "pb-[calc(var(--tabbar)+24px)]",
     actions: "pb-[calc(110px+env(safe-area-inset-bottom))]",
     "tabs+actions": "pb-[calc(var(--tabbar)+180px)]",
+    "tabs+row": "pb-[calc(var(--tabbar)+96px)]",
   }[bottom];
   return (
     <main

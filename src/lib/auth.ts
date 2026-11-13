@@ -67,7 +67,7 @@ export async function getUserMetadata(): Promise<Record<string, unknown>> {
 export function homeFor(session: Session): string {
   if (session.state === "signed_out") return "/login";
   if (session.state !== "ok") return "/no-access";
-  return session.crew.role === "admin" ? "/admin" : "/home";
+  return session.crew.role === "admin" ? "/admin" : "/timesheet";
 }
 
 async function requireRole(roles: CrewRole[]): Promise<CrewProfile> {

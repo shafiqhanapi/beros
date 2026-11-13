@@ -43,7 +43,7 @@ export default async function AdminOverview() {
         {[
           ["/admin/bookings", "▦", "Bookings"],
           ["/admin/services", "◇", "Services"],
-          ["/home", "⌂", "Crew view"],
+          ["/timesheet", "⌂", "Crew view"],
         ].map(([href, icon, text]) => (
           <Link key={href} href={href} className="flex flex-col items-center gap-1 rounded-2xl border border-line bg-card py-3 text-[13px] font-semibold">
             <span className="text-base">{icon}</span>

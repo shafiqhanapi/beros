@@ -19,7 +19,7 @@ npm run dev
 | Public | `/login`, `/auth/callback`, `/auth/signout` | Anyone |
 | Public | `/forgot-password`, `/forgot-password/sent` | Anyone |
 | Signed in | `/reset-password` (reached from the reset email) | Any signed-in user |
-| Crew | `/home`, `/timesheet`, `/claims`, `/history`, `/payslips`, `/profile` (+ `/phone`, `/paynow`) | `crew.role = 'crew'`, status not `inactive` |
+| Crew | `/timesheet` (landing page), `/claims`, `/history`, `/payslips`, `/profile` (+ `/phone`, `/paynow`); `/home` redirects to `/timesheet` | `crew.role = 'crew'`, status not `inactive` |
 | Admin | `/admin/*` | `crew.role = 'admin'` and `status = 'active'` (same as `is_admin()`) |
 
 - `src/middleware.ts` refreshes the Supabase session and sends signed-out visitors to `/login`.

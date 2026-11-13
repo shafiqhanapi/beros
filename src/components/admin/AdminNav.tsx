@@ -53,7 +53,7 @@ export function AdminSidebar({ name, initials, badges }: { name: string; initial
       })}
       <div className="flex-1" />
       <Link
-        href="/home"
+        href="/timesheet"
         className="mb-2 flex items-center gap-3 rounded-[10px] border border-line px-3 py-2.5 text-sm font-semibold hover:bg-page"
       >
         <span className="w-4 text-center">⌂</span>

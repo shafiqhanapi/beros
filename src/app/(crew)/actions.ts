@@ -34,7 +34,6 @@ const editable = (ts: TimesheetRow | null) => !ts || ts.status === "draft" || ts
 
 const refreshTimesheet = () => {
   revalidatePath("/timesheet");
-  revalidatePath("/home");
 };
 
 // ---------------------------------------------------------------------------
@@ -179,7 +178,6 @@ export async function saveClaim(input: {
   if (error) return fail(error.message);
   // TODO(Phase 4): email the admin about the new or resubmitted claim.
   revalidatePath("/claims");
-  revalidatePath("/home");
   return {};
 }
 
@@ -191,7 +189,6 @@ export async function deleteClaim(id: string): Promise<ActionResult> {
   if (error) return fail(error.message);
   if (claim.receipt_path) await supabase.storage.from("receipts").remove([claim.receipt_path as string]);
   revalidatePath("/claims");
-  revalidatePath("/home");
   return {};
 }
 

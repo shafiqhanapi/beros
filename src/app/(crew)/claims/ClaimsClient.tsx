@@ -52,7 +52,7 @@ export function ClaimsClient({ claims, crewId, month, openNew }: { claims: Claim
         ))}
       </div>
 
-      <FixedActions>
+      <FixedActions aboveTabs>
         <button type="button" onClick={() => setEditing("new")} className={`${btnPrimary} flex-1 whitespace-pre md:flex-none md:px-8`}>
           {"+  New claim"}
         </button>

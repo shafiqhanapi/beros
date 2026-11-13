@@ -47,7 +47,7 @@ export default async function HistoryPage({ searchParams }: { searchParams: Prom
 
       {months.length === 0 && (
         <p className={`${cardClass} px-4 py-6 text-center text-[13px] text-muted`}>
-          Paid months will show here. Anything in progress is on Home, Timesheet and Claims.
+          Paid months will show here. Anything in progress is on Timesheet and Claims.
         </p>
       )}
 

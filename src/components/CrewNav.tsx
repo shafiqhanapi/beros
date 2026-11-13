@@ -5,14 +5,14 @@ import { usePathname } from "next/navigation";
 import { Logo } from "./Logo";
 
 const TABS = [
-  { href: "/home", label: "Home", icon: "⌂" },
+  { href: "/timesheet", label: "Timesheet", icon: "▤" },
+  { href: "/claims", label: "Claims", icon: "⎙" },
   { href: "/history", label: "History", icon: "☰" },
-  { href: "/payslips", label: "Payslips", icon: "▤" },
+  { href: "/payslips", label: "Payslips", icon: "$" },
   { href: "/profile", label: "Profile", icon: "○" },
 ];
 
 const SIDEBAR = [
-  { href: "/home", label: "Home", icon: "⌂" },
   { href: "/timesheet", label: "Timesheet", icon: "▤" },
   { href: "/claims", label: "Claims", icon: "⎙" },
   { href: "/history", label: "History", icon: "☰" },
@@ -22,7 +22,7 @@ const SIDEBAR = [
 
 const isActive = (pathname: string, href: string) => pathname === href || pathname.startsWith(`${href}/`);
 
-/** Mobile tab bar. Only shown on the four tab screens; Timesheet, Claims and edit screens use a back button. */
+/** Mobile tab bar. Shown on the five tab screens; Profile edit screens use a back button. */
 export function TabBar() {
   const pathname = usePathname();
   if (!TABS.some((t) => pathname === t.href)) return null;

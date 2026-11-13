@@ -40,7 +40,7 @@ export function StatusPill({ status, size = "md" }: { status: Status; size?: "sm
 }
 
 /** Square back button (←). Hidden on desktop, where the sidebar handles navigation. */
-export function BackButton({ href = "/home" }: { href?: string }) {
+export function BackButton({ href = "/timesheet" }: { href?: string }) {
   return (
     <Link
       href={href}

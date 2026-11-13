@@ -1,4 +1,3 @@
-import { BackButton } from "@/components/ui";
 import { Page, PageHeader } from "@/components/Page";
 import { PillSelect } from "@/components/PillSelect";
 import { getClaims, getMe } from "@/lib/data";
@@ -11,8 +10,8 @@ export default async function ClaimsPage({ searchParams }: { searchParams: Promi
   const [me, claims] = await Promise.all([getMe(), getClaims(month)]);
 
   return (
-    <Page bottom="actions">
-      <PageHeader title="Claims" back={<BackButton />}>
+    <Page bottom="tabs+row">
+      <PageHeader title="Claims" large>
         <PillSelect param="month" value={value} options={options} label="Month" />
       </PageHeader>
       <ClaimsClient claims={claims} crewId={me.id} month={month} openNew={sp.new === "1"} />

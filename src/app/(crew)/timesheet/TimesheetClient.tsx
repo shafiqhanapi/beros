@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import { FixedActions } from "@/components/Page";
+import { PillSelect } from "@/components/PillSelect";
 import { ConfirmDialog, Sheet } from "@/components/Sheet";
 import {
   ErrorNote,
@@ -42,7 +43,17 @@ type SheetState =
   | { mode: "edit"; entry: Entry }
   | null;
 
-export function TimesheetClient({ view, rate }: { view: TimesheetView; rate: number }) {
+export function TimesheetClient({
+  view,
+  rate,
+  monthValue,
+  monthOptions,
+}: {
+  view: TimesheetView;
+  rate: number;
+  monthValue: string;
+  monthOptions: { value: string; label: string }[];
+}) {
   const router = useRouter();
   const [sheet, setSheet] = useState<SheetState>(null);
   const [confirmWithdraw, setConfirmWithdraw] = useState(false);
@@ -68,8 +79,51 @@ export function TimesheetClient({ view, rate }: { view: TimesheetView; rate: num
       }
     });
 
+  const saveDraft = () => {
+    setSaved(true);
+    router.refresh();
+    setTimeout(() => setSaved(false), 2000);
+  };
+
+  /** Save draft + Submit (or Withdraw): top right on desktop, footer on mobile. */
+  const actions = (where: "header" | "footer") => {
+    // Header buttons are compact to sit beside the month pill; footer ones are full-size.
+    const primary =
+      where === "header"
+        ? "rounded-[10px] bg-ink px-4 py-2 text-[13px] font-semibold text-white disabled:bg-strong-line disabled:text-draft"
+        : `${btnPrimary} flex-1`;
+    const secondary =
+      where === "header" ? "rounded-[10px] border border-strong-line bg-card px-4 py-2 text-[13px] font-semibold disabled:opacity-50" : `${btnSecondary} flex-1`;
+    if (editable)
+      return (
+        <>
+          <button type="button" className={secondary} disabled={pending} onClick={saveDraft}>
+            {saved ? "Draft saved ✓" : "Save draft"}
+          </button>
+          <button type="button" className={primary} disabled={pending || entries.length === 0} onClick={() => run(() => submitTimesheet(month))}>
+            {pending ? "Submitting…" : "Submit timesheet"}
+          </button>
+        </>
+      );
+    if (status === "submitted")
+      return (
+        <button type="button" className={secondary} onClick={() => setConfirmWithdraw(true)}>
+          Withdraw to edit
+        </button>
+      );
+    return null;
+  };
+  const hasActions = editable || status === "submitted";
+
   return (
     <>
+      <div className="flex w-full items-center gap-3">
+        <h1 className="text-[22px] font-bold md:text-[26px]">Timesheet</h1>
+        <div className="flex-1" />
+        <PillSelect param="month" value={monthValue} options={monthOptions} label="Month" />
+        {hasActions && <div className="hidden items-center gap-2 md:flex">{actions("header")}</div>}
+      </div>
+
       <div className={`${cardClass} flex flex-col gap-4 p-5`}>
         <div className="flex items-center">
           <span className="text-[13px] font-medium text-muted">Hours pay</span>
@@ -110,105 +164,77 @@ export function TimesheetClient({ view, rate }: { view: TimesheetView; rate: num
 
       <ErrorNote>{error}</ErrorNote>
 
-      <div className="grid gap-6 md:grid-cols-2 md:items-start">
-        <section className="flex flex-col gap-1">
-          <SectionHeader title="To log" aside={`${toLog.length} ${toLog.length === 1 ? "booking" : "bookings"}`} />
-          {toLog.length === 0 ? (
-            <p className={`${cardClass} px-4 py-4 text-[13px] text-muted`}>No assigned bookings left to log this month.</p>
-          ) : (
-            <ListCard>
-              {toLog.map((b) => (
-                <div key={b.id} className="flex items-center gap-3 py-3.5">
-                  <div className="flex min-w-0 flex-1 flex-col gap-[3px]">
-                    <p className="truncate text-sm font-semibold">{b.title}</p>
-                    <p className="truncate text-xs text-muted">
-                      {fmtDayTs(b.scheduled_at)} · {b.address}
-                    </p>
-                  </div>
-                  <button
-                    type="button"
-                    disabled={!editable}
-                    onClick={() => setSheet({ mode: "booking", booking: b })}
-                    className="shrink-0 rounded-[10px] bg-ink px-3 py-2 text-xs font-semibold text-white disabled:bg-segment disabled:text-faint"
-                  >
-                    + Hours
-                  </button>
+      <section className="flex flex-col gap-1">
+        <SectionHeader title="Assigned Jobs" aside={`${toLog.length} to log`} />
+        {toLog.length === 0 ? (
+          <p className={`${cardClass} px-4 py-4 text-[13px] text-muted`}>No assigned jobs left to log this month.</p>
+        ) : (
+          <ListCard>
+            {toLog.map((b) => (
+              <div key={b.id} className="flex items-center gap-3 py-3.5">
+                <div className="flex min-w-0 flex-1 flex-col gap-[3px]">
+                  <p className="truncate text-sm font-semibold">{b.title}</p>
+                  <p className="truncate text-xs text-muted">
+                    {fmtDayTs(b.scheduled_at)} · {b.address}
+                  </p>
                 </div>
-              ))}
-            </ListCard>
-          )}
-        </section>
-
-        <section className="flex flex-col gap-1">
-          <SectionHeader title="Logged" aside={editable ? (entries.length ? "Tap to edit" : null) : "Locked"} />
-          {entries.length === 0 ? (
-            <p className={`${cardClass} px-4 py-4 text-[13px] text-muted`}>No hours logged yet.</p>
-          ) : (
-            <ListCard>
-              {entries.map((e) => (
                 <button
-                  key={e.id}
                   type="button"
                   disabled={!editable}
-                  onClick={() => setSheet({ mode: "edit", entry: e })}
-                  className="flex items-center gap-3 py-3.5 text-left disabled:cursor-default"
+                  onClick={() => setSheet({ mode: "booking", booking: b })}
+                  className="shrink-0 rounded-[10px] bg-ink px-3 py-2 text-xs font-semibold text-white disabled:bg-segment disabled:text-faint"
                 >
-                  <div className="flex min-w-0 flex-1 flex-col gap-[3px]">
-                    <p className="truncate text-sm font-semibold">{e.booking?.title ?? "Admin matters"}</p>
-                    <p className="truncate text-xs text-muted">
-                      {fmtDayDate(e.work_date)} · {e.booking ? e.booking.address : e.note || "Admin matters"}
-                    </p>
-                  </div>
-                  <div className="flex shrink-0 flex-col items-end gap-[3px]">
-                    <p className="text-sm font-semibold">{fmtHours(e.hours)}</p>
-                    <p className="text-xs text-muted">{fmtMoney(e.hours * e.rate)}</p>
-                  </div>
+                  + Hours
                 </button>
-              ))}
-            </ListCard>
-          )}
-          {editable && (
-            <button
-              type="button"
-              onClick={() => setSheet({ mode: "admin" })}
-              className="mt-1 flex items-center justify-center rounded-[14px] border border-dashed border-[#d1d1d1] py-3.5 text-sm font-semibold whitespace-pre"
-            >
-              {"+  Add another entry"}
-            </button>
-          )}
-        </section>
-      </div>
+              </div>
+            ))}
+          </ListCard>
+        )}
+        {editable && (
+          <button
+            type="button"
+            onClick={() => setSheet({ mode: "admin" })}
+            className="mt-2 flex items-center justify-center rounded-[14px] border border-dashed border-[#d1d1d1] py-3.5 text-sm font-semibold whitespace-pre"
+          >
+            {"+  Add another entry"}
+          </button>
+        )}
+      </section>
 
-      {editable && (
-        <FixedActions>
-          <button
-            type="button"
-            className={`${btnSecondary} flex-1 md:flex-none md:px-8`}
-            disabled={pending}
-            onClick={() => {
-              setSaved(true);
-              router.refresh();
-              setTimeout(() => setSaved(false), 2000);
-            }}
-          >
-            {saved ? "Draft saved ✓" : "Save draft"}
-          </button>
-          <button
-            type="button"
-            className={`${btnPrimary} flex-1 md:flex-none md:px-8`}
-            disabled={pending || entries.length === 0}
-            onClick={() => run(() => submitTimesheet(month))}
-          >
-            {pending ? "Submitting…" : "Submit timesheet"}
-          </button>
-        </FixedActions>
-      )}
-      {status === "submitted" && (
-        <FixedActions>
-          <button type="button" className={`${btnSecondary} flex-1 md:flex-none md:px-8`} onClick={() => setConfirmWithdraw(true)}>
-            Withdraw to edit
-          </button>
-        </FixedActions>
+      <section className="flex flex-col gap-1">
+        <SectionHeader title="Logged" aside={editable ? (entries.length ? "Tap to edit" : null) : "Locked"} />
+        {entries.length === 0 ? (
+          <p className={`${cardClass} px-4 py-4 text-[13px] text-muted`}>No hours logged yet.</p>
+        ) : (
+          <ListCard>
+            {entries.map((e) => (
+              <button
+                key={e.id}
+                type="button"
+                disabled={!editable}
+                onClick={() => setSheet({ mode: "edit", entry: e })}
+                className="flex items-center gap-3 py-3.5 text-left disabled:cursor-default"
+              >
+                <div className="flex min-w-0 flex-1 flex-col gap-[3px]">
+                  <p className="truncate text-sm font-semibold">{e.booking?.title ?? "Admin matters"}</p>
+                  <p className="truncate text-xs text-muted">
+                    {fmtDayDate(e.work_date)} · {e.booking ? e.booking.address : e.note || "Admin matters"}
+                  </p>
+                </div>
+                <div className="flex shrink-0 flex-col items-end gap-[3px]">
+                  <p className="text-sm font-semibold">{fmtHours(e.hours)}</p>
+                  <p className="text-xs text-muted">{fmtMoney(e.hours * e.rate)}</p>
+                </div>
+              </button>
+            ))}
+          </ListCard>
+        )}
+      </section>
+
+      {hasActions && (
+        <div className="md:hidden">
+          <FixedActions aboveTabs>{actions("footer")}</FixedActions>
+        </div>
       )}
 
       <ConfirmDialog

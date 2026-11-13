@@ -66,3 +66,15 @@ Screens follow Figma A1–A5e and AM1–AM6: Overview, Timesheets and Claims rev
 ## Emails from Supabase Auth
 
 Branded templates for Supabase's invite and password-reset emails are in `supabase/email-templates/` (paste them in Supabase → Authentication → Emails → Templates). They use the logo at `https://crew.beros.online/email/beros-logo.png` (PNG, since many email apps block SVG). To send from `@beros.online` instead of Supabase, set up custom SMTP (e.g. Resend) in Supabase → Project Settings → Authentication → SMTP Settings.
+
+## Email notifications (Resend)
+
+Sent by `src/lib/notifications.ts` through the Resend API, from `BEROS Crew Portal <crew@beros.online>` (reply-to hello@beros.online):
+
+| Event | To |
+| --- | --- |
+| Invited crew member signs in for the first time | Active admins |
+| Timesheet submitted | Active admins |
+| Month marked as paid | The crew member ("Payment sent", unless they turned email notifications off) and active admins |
+
+Server env vars (Vercel): `RESEND_API_KEY` (required to send), optional `ADMIN_NOTIFY_EMAIL` (extra comma-separated admin recipients), `EMAIL_FROM`, `EMAIL_REPLY_TO`, `NEXT_PUBLIC_SITE_URL`. A failed email is logged and never blocks the action.

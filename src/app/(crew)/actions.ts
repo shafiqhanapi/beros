@@ -1,6 +1,8 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { after } from "next/server";
+import { notifyTimesheetSubmitted } from "@/lib/notifications";
 import { createClient } from "@/lib/supabase/server";
 import { getMe } from "@/lib/data";
 import { isSgMobile, sgDate, toMonth, monthEnd } from "@/lib/format";
@@ -107,15 +109,18 @@ export async function submitTimesheet(monthInput: string): Promise<ActionResult>
   if (!ts) return fail("Log some hours before submitting.");
   if (!editable(ts)) return fail("This timesheet has already been submitted.");
   const supabase = await createClient();
-  const { count } = await supabase.from("timesheet_entries").select("id", { count: "exact", head: true }).eq("timesheet_id", ts.id);
-  if (!count) return fail("Log some hours before submitting.");
+  const { data: entries } = await supabase.from("timesheet_entries").select("hours, rate").eq("timesheet_id", ts.id);
+  if (!entries?.length) return fail("Log some hours before submitting.");
   const { error } = await supabase
     .from("timesheets")
     .update({ status: "submitted", submitted_at: new Date().toISOString() })
     .eq("id", ts.id)
     .in("status", ["draft", "rejected"]);
   if (error) return fail(error.message);
-  // TODO(Phase 4): email the admin that a timesheet was submitted.
+  const me = await getMe();
+  const hours = entries.reduce((s, e) => s + Number(e.hours), 0);
+  const pay = entries.reduce((s, e) => s + Number(e.hours) * Number(e.rate), 0);
+  after(() => notifyTimesheetSubmitted({ timesheetId: ts.id, crewName: me.full_name, month, hours, pay, jobs: entries.length }));
   refreshTimesheet();
   return {};
 }

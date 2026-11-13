@@ -1,6 +1,8 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { after } from "next/server";
+import { notifyPaid } from "@/lib/notifications";
 import { headers } from "next/headers";
 import { requireAdmin } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
@@ -141,7 +143,7 @@ export async function markPaid(crewId: string, monthInput: string): Promise<Acti
   const { supabase } = await admin();
 
   const [{ data: crew }, { data: sheet }, { data: claimRows }, { data: existing }] = await Promise.all([
-    supabase.from("crew").select("id, full_name").eq("id", crewId).single(),
+    supabase.from("crew").select("id, full_name, paynow_name, paynow_phone").eq("id", crewId).single(),
     supabase.from("timesheets").select("*").eq("crew_id", crewId).eq("month", month).maybeSingle(),
     supabase.from("claims").select("*").eq("crew_id", crewId).eq("status", "approved").gte("claim_date", month).lte("claim_date", monthEnd(month)).order("claim_date"),
     supabase.from("payouts").select("paid_at").eq("crew_id", crewId).eq("month", month).maybeSingle(),
@@ -184,11 +186,15 @@ export async function markPaid(crewId: string, monthInput: string): Promise<Acti
   const { error: upErr } = await supabase.storage.from("payslips").upload(path, pdf, { contentType: "application/pdf", upsert: true });
   if (upErr) return fail(`Couldn't save the payslip PDF: ${upErr.message}`);
 
-  const { error: payErr } = await supabase.from("payouts").upsert(
-    { crew_id: crewId, month, hours_pay: hoursPay, claims_total: claimsTotal, payslip_number: number, payslip_path: path, paid_at: paidAt },
-    { onConflict: "crew_id,month" },
-  );
-  if (payErr) return fail(payErr.message);
+  const { data: payout, error: payErr } = await supabase
+    .from("payouts")
+    .upsert(
+      { crew_id: crewId, month, hours_pay: hoursPay, claims_total: claimsTotal, payslip_number: number, payslip_path: path, paid_at: paidAt },
+      { onConflict: "crew_id,month" },
+    )
+    .select("id")
+    .single();
+  if (payErr || !payout) return fail(payErr?.message ?? "Couldn't record the payout.");
 
   if (sheet && sheet.status === "approved") {
     await supabase.from("timesheets").update({ status: "paid", paid_at: paidAt }).eq("id", sheet.id);
@@ -196,7 +202,10 @@ export async function markPaid(crewId: string, monthInput: string): Promise<Acti
   if (claims.length) {
     await supabase.from("claims").update({ status: "paid", paid_at: paidAt }).in("id", claims.map((c) => c.id));
   }
-  // TODO(Phase 4): "Payment sent" email to the crew member with the payslip link.
+  const paynow = crew.paynow_phone ? `${crew.paynow_name ?? crew.full_name} (••${String(crew.paynow_phone).slice(-4)})` : null;
+  after(() =>
+    notifyPaid({ crewId, crewName: crew.full_name as string, month, hoursPay, claimsTotal, payoutId: payout.id as string, payslipNumber: number, paynow }),
+  );
   refreshAll();
   return { ok: "Marked as paid" };
 }

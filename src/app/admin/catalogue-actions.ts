@@ -22,7 +22,7 @@ const friendly = (msg: string) =>
 // Bookings
 // ---------------------------------------------------------------------------
 
-/** Replace a booking's crew with exactly `crewIds`. Assigned crew see it under "To log". */
+/** Replace a booking's crew with exactly `crewIds`. Assigned crew see it under "Assigned Jobs". */
 export async function saveAssignment(bookingId: string, crewIds: string[]): Promise<ActionResult> {
   const supabase = await db();
   const { data: current, error } = await supabase.from("booking_crew").select("crew_id").eq("booking_id", bookingId);

@@ -238,7 +238,7 @@ function BookingDetail({ booking: b, crew, hideHeader = false, onSaved }: { book
 
   const status = (s: "scheduled" | "completed" | "cancelled") =>
     start(async () => {
-      if (s === "cancelled" && !confirm("Cancel this booking? It will drop out of crew's To log lists.")) return;
+      if (s === "cancelled" && !confirm("Cancel this booking? It will drop out of crew's Assigned Jobs lists.")) return;
       const res = await setBookingStatus(b.id, s);
       if (res.error) setError(res.error);
       else onSaved();
@@ -328,7 +328,7 @@ function BookingDetail({ booking: b, crew, hideHeader = false, onSaved }: { book
           <button type="button" onClick={save} disabled={pending || !dirty} className="mt-2 rounded-[10px] bg-ink py-3 text-sm font-semibold text-white disabled:opacity-50">
             {pending ? "Saving…" : saved && !dirty ? "Saved ✓" : "Save assignment"}
           </button>
-          <p className="text-xs text-muted">Assigned crew will see this booking under “To log” in their timesheet.</p>
+          <p className="text-xs text-muted">Assigned crew will see this booking under “Assigned Jobs” in their timesheet.</p>
         </div>
       )}
 

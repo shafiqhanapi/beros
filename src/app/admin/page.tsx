@@ -38,6 +38,20 @@ export default async function AdminOverview() {
         <StatCard label="Paid this year" value={fmtMoney(o.paidThisYear)} sub={o.year} />
       </div>
 
+      {/* Bookings, Services and Crew view aren't in the 5-slot mobile tab bar */}
+      <nav className="grid grid-cols-3 gap-3 md:hidden" aria-label="More">
+        {[
+          ["/admin/bookings", "▦", "Bookings"],
+          ["/admin/services", "◇", "Services"],
+          ["/home", "⌂", "Crew view"],
+        ].map(([href, icon, text]) => (
+          <Link key={href} href={href} className="flex flex-col items-center gap-1 rounded-2xl border border-line bg-card py-3 text-[13px] font-semibold">
+            <span className="text-base">{icon}</span>
+            {text}
+          </Link>
+        ))}
+      </nav>
+
       <div className="flex flex-col gap-4 md:flex-row md:items-start">
         <section className="min-w-0 flex-1 overflow-hidden rounded-2xl border border-line bg-card">
           <div className="flex items-center px-5 pt-4 pb-3">

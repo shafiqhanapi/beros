@@ -1,10 +1,12 @@
-import { AdminHeader, AdminPage, EmptyRow } from "@/components/admin/ui";
+import { AdminPage } from "@/components/admin/ui";
+import { getCatalogue } from "@/lib/catalogue-data";
+import { CatalogueClient } from "./CatalogueClient";
 
-export default function AdminServices() {
+export default async function AdminServices() {
+  const catalogue = await getCatalogue();
   return (
     <AdminPage>
-      <AdminHeader title="Services" />
-      <EmptyRow>The service catalogue (categories, services, variants and add-ons) is coming next.</EmptyRow>
+      <CatalogueClient catalogue={catalogue} />
     </AdminPage>
   );
 }

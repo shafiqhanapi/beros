@@ -49,10 +49,16 @@ Screens follow the Figma file "BEROS Crew Timesheet" (mobile frames 01–07b, de
 
 ## Admin (Phase 3, part A)
 
-Screens follow Figma A1–A5e and AM1–AM6: Overview, Timesheets and Claims review (approve, reject with reason, approve all), Payouts (Mark as paid, CSV export) and Crew (invite, resend, edit, PayNow, deactivate). Bookings and Services are part B.
+Screens follow Figma A1–A5e and AM1–AM6: Overview, Timesheets and Claims review (approve, reject with reason, approve all), Payouts (Mark as paid, CSV export) and Crew (invite, resend, edit, PayNow, deactivate). Part B adds Bookings and the Service catalogue.
 
 - **Reads and writes** use the admin's own Supabase client; RLS gives an active admin access to all rows.
 - **Service-role key** (`SUPABASE_SERVICE_ROLE_KEY`, server-only, set in Vercel) is needed to invite crew (creates the auth user), activate invited crew on first sign-in, block sign-in on deactivation, and write the `paynow_changes` audit log for admin edits. Without it, those actions show a clear message and everything else still works.
 - **Invites** link to `/auth/accept`, which stores the session from the link and sends the new crew member to set a password. Add `https://crew.beros.online/**` to Supabase → Authentication → URL Configuration → Redirect URLs.
 - **Mark as paid** (per crew member and month) needs the timesheet approved (submitted ones must be reviewed first). It records `payouts` (hours pay + approved claims), renders the payslip PDF (`src/lib/payslip.ts`, pdf-lib) to `payslips/<crew id>/<YYYY-MM>.pdf`, and marks the timesheet and approved claims as paid.
 - Admins can also use the crew screens ("Crew view") to log their own hours and claims.
+
+## Admin (Phase 3, part B)
+
+- **Bookings** (Figma A6, A6b, AM7): month + Unassigned / Assigned / Completed / All tabs. The detail panel shows customer, items and total, and the crew checklist; "Save assignment" replaces the `booking_crew` rows, so the booking appears under "To log" for each assigned crew member. Bookings can be marked completed, reopened or cancelled (cancelled bookings drop out of To log).
+- **New booking**: items picked as Category › Service › Variant with quantities, add-ons (all categories, or limited to an item's category), date and time (Singapore), customer, address, postal code, source and optional crew. Names and prices are re-read from the catalogue on the server and copied onto the booking; totals come from the `sync_booking_totals()` trigger.
+- **Service catalogue** (Figma A7): categories, services (expand to see variants with duration, price and an on/off switch), edit a service with all its variants in one panel, and an Add-ons view. Turning an item off hides it from new bookings; nothing is deleted, because past bookings reference it.

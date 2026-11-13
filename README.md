@@ -46,3 +46,13 @@ Screens follow the Figma file "BEROS Crew Timesheet" (mobile frames 01–07b, de
 - **Profile**: phone and PayNow are saved with `update_my_contact()`. The email-notifications toggle is stored in the auth user's `user_metadata.email_notifications`, as the `crew` table has no column for it.
 - **Keep me signed in**: unticked sets a browser-session marker cookie; the middleware signs the user out once the browser has been closed.
 - Emails (timesheet submitted, claim submitted, PayNow changed) are Phase 4 and marked `TODO(Phase 4)` in the actions.
+
+## Admin (Phase 3, part A)
+
+Screens follow Figma A1–A5e and AM1–AM6: Overview, Timesheets and Claims review (approve, reject with reason, approve all), Payouts (Mark as paid, CSV export) and Crew (invite, resend, edit, PayNow, deactivate). Bookings and Services are part B.
+
+- **Reads and writes** use the admin's own Supabase client; RLS gives an active admin access to all rows.
+- **Service-role key** (`SUPABASE_SERVICE_ROLE_KEY`, server-only, set in Vercel) is needed to invite crew (creates the auth user), activate invited crew on first sign-in, block sign-in on deactivation, and write the `paynow_changes` audit log for admin edits. Without it, those actions show a clear message and everything else still works.
+- **Invites** link to `/auth/accept`, which stores the session from the link and sends the new crew member to set a password. Add `https://crew.beros.online/**` to Supabase → Authentication → URL Configuration → Redirect URLs.
+- **Mark as paid** (per crew member and month) needs the timesheet approved (submitted ones must be reviewed first). It records `payouts` (hours pay + approved claims), renders the payslip PDF (`src/lib/payslip.ts`, pdf-lib) to `payslips/<crew id>/<YYYY-MM>.pdf`, and marks the timesheet and approved claims as paid.
+- Admins can also use the crew screens ("Crew view") to log their own hours and claims.

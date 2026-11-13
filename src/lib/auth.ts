@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { isSupabaseConfigured } from "@/lib/supabase/env";
 import { num, type CrewRow } from "@/lib/types";
+import { adminClient, hasServiceRole } from "@/lib/supabase/admin";
 
 export type CrewRole = "crew" | "admin";
 export type CrewStatus = "invited" | "active" | "inactive";
@@ -42,6 +43,17 @@ export const getSession = cache(async (): Promise<Session> => {
   if (!crew) return { state: "no_profile", email };
   const row = { ...crew, hourly_rate: num(crew.hourly_rate) };
   if (row.status === "inactive") return { state: "inactive", crew: row };
+
+  // First sign-in of an invited crew member: mark them active (crew can't
+  // change their own status under RLS, so this uses the service role).
+  if (row.status === "invited" && hasServiceRole) {
+    const { error: activateError } = await adminClient()
+      .from("crew")
+      .update({ status: "active" })
+      .eq("id", row.id)
+      .eq("status", "invited");
+    if (!activateError) row.status = "active";
+  }
   return { state: "ok", crew: row, userMetadata: (claims.user_metadata as Record<string, unknown>) ?? {} };
 });
 

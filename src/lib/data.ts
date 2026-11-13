@@ -47,7 +47,7 @@ async function bookingTitles(ids: string[]): Promise<Map<string, string>> {
   return titles;
 }
 
-async function bookingSummaries(ids: string[]): Promise<Map<string, BookingSummary>> {
+export async function bookingSummaries(ids: string[]): Promise<Map<string, BookingSummary>> {
   const out = new Map<string, BookingSummary>();
   if (ids.length === 0) return out;
   const supabase = await db();

@@ -8,7 +8,7 @@ import { Switch } from "@/components/Switch";
 import { ErrorNote } from "@/components/ui";
 import type { AddOn, Catalogue, Service, Variant } from "@/lib/catalogue-data";
 import { fmtMoney, fmtMoneyShort } from "@/lib/format";
-import { saveAddOn, saveCategory, saveService, setCatalogueActive } from "../catalogue-actions";
+import { deleteCatalogueItem, saveAddOn, saveCategory, saveService, setCatalogueActive } from "../catalogue-actions";
 
 const input = "w-full rounded-[10px] border border-field bg-card px-3 py-2.5 text-sm outline-none placeholder:text-faint focus:border-ink";
 const label = "text-[13px] font-semibold";
@@ -25,7 +25,7 @@ export function CatalogueClient({ catalogue }: { catalogue: Catalogue }) {
   const [panel, setPanel] = useState<ServicePanel>(null);
   const [addOnPanel, setAddOnPanel] = useState<AddOn | "new" | null>(null);
   const [newCat, setNewCat] = useState<string | null>(null);
-  const [renaming, setRenaming] = useState<string | null>(null);
+  const [catEdit, setCatEdit] = useState<Catalogue["categories"][number] | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [pending, start] = useTransition();
 
@@ -126,33 +126,14 @@ export function CatalogueClient({ catalogue }: { catalogue: Catalogue }) {
           <section className="flex min-w-0 flex-1 flex-col gap-3">
             {category && (
               <div className="flex items-center gap-3">
-                {renaming !== null ? (
-                  <form
-                    className="flex flex-1 gap-2"
-                    onSubmit={(e) => {
-                      e.preventDefault();
-                      run(() => saveCategory({ id: category.id, name: renaming }), () => setRenaming(null));
-                    }}
-                  >
-                    <input autoFocus value={renaming} onChange={(e) => setRenaming(e.target.value)} className={input} />
-                    <button type="button" onClick={() => setRenaming(null)} className="rounded-lg border border-strong-line px-3 text-xs font-semibold">
-                      Cancel
-                    </button>
-                    <button className="rounded-lg bg-ink px-3 text-xs font-semibold text-white">Save</button>
-                  </form>
-                ) : (
-                  <>
-                    <h2 className="text-lg font-bold">{category.name}</h2>
-                    <button type="button" onClick={() => setRenaming(category.name)} className="text-xs font-semibold text-muted underline">
-                      Rename
-                    </button>
-                    <div className="flex-1" />
-                    <span className="text-[13px] text-muted">
-                      {catServices.length} service{catServices.length === 1 ? "" : "s"}
-                    </span>
-                    <Switch on={category.active} label={`${category.name} active`} disabled={pending} onChange={(on) => toggle("category", category.id, on)} />
-                  </>
-                )}
+                <h2 className={`text-lg font-bold ${category.active ? "" : "text-muted line-through"}`}>{category.name}</h2>
+                <button type="button" onClick={() => setCatEdit(category)} className="rounded-lg border border-strong-line px-3 py-1.5 text-xs font-semibold">
+                  Edit
+                </button>
+                <div className="flex-1" />
+                <span className="text-[13px] text-muted">
+                  {catServices.length} service{catServices.length === 1 ? "" : "s"}
+                </span>
               </div>
             )}
 
@@ -232,6 +213,19 @@ export function CatalogueClient({ catalogue }: { catalogue: Catalogue }) {
           }}
         />
       )}
+      {catEdit && (
+        <CategoryEditor
+          key={catEdit.id}
+          category={catEdit}
+          serviceCount={services.filter((x) => x.category_id === catEdit.id).length}
+          onClose={() => setCatEdit(null)}
+          onSaved={(deleted) => {
+            setCatEdit(null);
+            if (deleted) setCatId(categories.find((c) => c.id !== catEdit.id)?.id ?? null);
+            router.refresh();
+          }}
+        />
+      )}
       {addOnPanel && (
         <AddOnEditor
           key={addOnPanel === "new" ? "new" : addOnPanel.id}
@@ -245,6 +239,87 @@ export function CatalogueClient({ catalogue }: { catalogue: Catalogue }) {
         />
       )}
     </>
+  );
+}
+
+// ---------------------------------------------------------------------------
+
+function CategoryEditor({
+  category,
+  serviceCount,
+  onClose,
+  onSaved,
+}: {
+  category: Catalogue["categories"][number];
+  serviceCount: number;
+  onClose: () => void;
+  onSaved: (deleted: boolean) => void;
+}) {
+  const [name, setName] = useState(category.name);
+  const [active, setActive] = useState(category.active);
+  const [error, setError] = useState<string | null>(null);
+  const [pending, start] = useTransition();
+
+  const save = () =>
+    start(async () => {
+      setError(null);
+      if (name.trim() !== category.name) {
+        const res = await saveCategory({ id: category.id, name });
+        if (res.error) return setError(res.error);
+      }
+      if (active !== category.active) {
+        const res = await setCatalogueActive("category", category.id, active);
+        if (res.error) return setError(res.error);
+      }
+      onSaved(false);
+    });
+
+  const remove = () => {
+    if (!confirm(`Delete the "${category.name}" category?`)) return;
+    start(async () => {
+      setError(null);
+      const res = await deleteCatalogueItem("category", category.id);
+      if (res.error) setError(res.error);
+      else onSaved(true);
+    });
+  };
+
+  return (
+    <SidePanel
+      title="Edit category"
+      onClose={onClose}
+      footer={
+        <>
+          <button type="button" onClick={onClose} className="flex-1 rounded-[10px] border border-strong-line py-3 text-sm font-semibold">
+            Cancel
+          </button>
+          <button type="button" onClick={save} disabled={!name.trim() || pending} className="flex-1 rounded-[10px] bg-ink py-3 text-sm font-semibold text-white disabled:bg-strong-line disabled:text-draft">
+            {pending ? "Saving…" : "Save"}
+          </button>
+        </>
+      }
+    >
+      <label className="flex flex-col gap-2">
+        <span className={label}>Category name</span>
+        <input autoFocus value={name} onChange={(e) => setName(e.target.value)} className={input} />
+      </label>
+      <div className="flex items-center gap-3">
+        <div className="flex flex-1 flex-col">
+          <span className={label}>Active</span>
+          <span className="text-xs text-muted">Show its services in new bookings</span>
+        </div>
+        <Switch on={active} onChange={setActive} label="Category active" />
+      </div>
+      <ErrorNote>{error}</ErrorNote>
+      <div className="flex flex-col gap-1 border-t border-line pt-4">
+        <button type="button" onClick={remove} disabled={pending || serviceCount > 0} className="self-start text-sm font-semibold text-bad disabled:text-faint">
+          Delete category
+        </button>
+        <span className="text-xs text-muted">
+          {serviceCount > 0 ? `Delete or move its ${serviceCount} service${serviceCount === 1 ? "" : "s"} first.` : "This can't be undone."}
+        </span>
+      </div>
+    </SidePanel>
   );
 }
 
@@ -280,6 +355,30 @@ function ServiceEditor({
   ]);
   const [error, setError] = useState<string | null>(null);
   const [pending, start] = useTransition();
+  const router = useRouter();
+
+  const removeVariant = (i: number) => {
+    const r = rows[i]!;
+    if (!r.id) return setRows((rs) => rs.filter((_, j) => j !== i));
+    if (!confirm(`Delete the "${r.name}" variant?`)) return;
+    start(async () => {
+      setError(null);
+      const res = await deleteCatalogueItem("variant", r.id!);
+      if (res.error) return setError(res.error);
+      setRows((rs) => rs.filter((x) => x.id !== r.id));
+      router.refresh();
+    });
+  };
+
+  const removeService = () => {
+    if (!service || !confirm(`Delete "${service.name}" and all its variants?`)) return;
+    start(async () => {
+      setError(null);
+      const res = await deleteCatalogueItem("service", service.id);
+      if (res.error) setError(res.error);
+      else onSaved(categoryId);
+    });
+  };
 
   const filled = rows.filter((r) => r.name.trim());
   const valid = name.trim() && cat && filled.length > 0 && filled.every((r) => r.price !== "" && Number(r.price) >= 0);
@@ -344,32 +443,35 @@ function ServiceEditor({
 
       <div className="flex flex-col gap-2">
         <span className={label}>Variants</span>
-        <div className="grid grid-cols-[1fr_88px_64px_40px] gap-2 text-[11px] font-semibold tracking-[0.66px] text-muted uppercase">
+        <div className="grid grid-cols-[1fr_80px_56px_40px_20px] gap-2 text-[11px] font-semibold tracking-[0.66px] text-muted uppercase">
           <span>Name</span>
           <span>Price</span>
           <span>Hours</span>
+          <span>On</span>
           <span />
         </div>
         {rows.map((r, i) => (
-          <div key={r.id ?? `new-${i}`} className="grid grid-cols-[1fr_88px_64px_40px] items-center gap-2">
+          <div key={r.id ?? `new-${i}`} className="grid grid-cols-[1fr_80px_56px_40px_20px] items-center gap-2">
             <input value={r.name} onChange={(e) => set(i, { name: e.target.value })} placeholder="e.g. 3-seater" aria-label="Variant name" className={input} />
             <input inputMode="decimal" value={r.price} onChange={(e) => set(i, { price: e.target.value.replace(/[^\d.]/g, "") })} placeholder="$" aria-label="Price" className={input} />
             <input inputMode="decimal" value={r.duration} onChange={(e) => set(i, { duration: e.target.value.replace(/[^\d.]/g, "") })} placeholder="h" aria-label="Estimated hours" className={input} />
-            {r.id ? (
-              <Switch on={r.active} onChange={(on) => set(i, { active: on })} label={`${r.name} active`} />
-            ) : (
-              <button type="button" aria-label="Remove variant" onClick={() => setRows((rs) => rs.filter((_, j) => j !== i))} className="text-muted">
-                ✕
-              </button>
-            )}
+            <Switch on={r.active} onChange={(on) => set(i, { active: on })} label={`${r.name || "Variant"} active`} />
+            <button type="button" aria-label={`Delete ${r.name || "variant"}`} disabled={pending} onClick={() => removeVariant(i)} className="text-sm text-muted hover:text-bad">
+              ✕
+            </button>
           </div>
         ))}
         <button type="button" onClick={() => setRows((rs) => [...rs, blank()])} className="self-start text-[13px] font-semibold">
           + Add variant
         </button>
-        <p className="text-xs text-muted">Variants already used in bookings can be turned off but not removed.</p>
+        <p className="text-xs text-muted">Variants already used in bookings can be switched off but not deleted.</p>
       </div>
       <ErrorNote>{error}</ErrorNote>
+      {service && (
+        <button type="button" onClick={removeService} disabled={pending} className="self-start border-t border-line pt-4 text-sm font-semibold text-bad">
+          Delete service
+        </button>
+      )}
     </SidePanel>
   );
 }
@@ -489,6 +591,24 @@ function AddOnEditor({ addOn, categories, onClose, onSaved }: { addOn: AddOn | n
         <Switch on={active} onChange={setActive} label="Add-on active" />
       </div>
       <ErrorNote>{error}</ErrorNote>
+      {addOn && (
+        <button
+          type="button"
+          disabled={pending}
+          onClick={() => {
+            if (!confirm(`Delete the "${addOn.name}" add-on?`)) return;
+            start(async () => {
+              setError(null);
+              const res = await deleteCatalogueItem("addOn", addOn.id);
+              if (res.error) setError(res.error);
+              else onSaved();
+            });
+          }}
+          className="self-start border-t border-line pt-4 text-sm font-semibold text-bad"
+        >
+          Delete add-on
+        </button>
+      )}
     </SidePanel>
   );
 }

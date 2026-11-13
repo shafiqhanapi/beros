@@ -241,3 +241,31 @@ export async function saveAddOn(input: { id?: string; name: string; price: numbe
   revalidatePath("/admin/services");
   return {};
 }
+
+/**
+ * Delete a catalogue item. Postgres refuses (foreign key) when bookings or
+ * other items still use it; we turn that into a plain message. Deleting a
+ * service also deletes its variants (ON DELETE CASCADE), unless a booking
+ * uses one of them.
+ */
+export async function deleteCatalogueItem(kind: keyof typeof TABLES, id: string): Promise<ActionResult> {
+  const supabase = await db();
+  if (kind === "category") {
+    const { count } = await supabase.from("services").select("id", { count: "exact", head: true }).eq("category_id", id);
+    if (count) return fail("This category still has services. Delete or move them first.");
+  }
+  const { error, count } = await supabase.from(TABLES[kind]).delete({ count: "exact" }).eq("id", id);
+  if (error) {
+    if (error.code === "23503" || /foreign key/i.test(error.message)) {
+      return fail(
+        kind === "category"
+          ? "Add-ons are limited to this category. Change or delete those add-ons first, or switch the category off instead."
+          : "This is used in past bookings, so it can't be deleted. Switch it off instead to hide it from new bookings.",
+      );
+    }
+    return fail(error.message);
+  }
+  if (!count) return fail("Nothing was deleted. It may already be gone.");
+  revalidatePath("/admin/services");
+  return { ok: "Deleted" };
+}

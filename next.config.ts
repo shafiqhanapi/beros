@@ -37,6 +37,14 @@ const securityHeaders = [
 
 const nextConfig: NextConfig = {
   poweredByHeader: false,
+  experimental: {
+    // Keep recently visited pages in the browser's router cache so switching
+    // tabs back and forth is instant. Saving anything (server actions call
+    // revalidatePath / router.refresh) clears this cache, so your own changes
+    // always show at once. "static" also covers pages preloaded with
+    // <Link prefetch>, e.g. the crew tabs.
+    staleTimes: { dynamic: 30, static: 60 },
+  },
   async headers() {
     return [{ source: "/:path*", headers: securityHeaders }];
   },

@@ -56,6 +56,7 @@ export function TabBar() {
                   <li key={m.href}>
                     <Link
                       href={m.href}
+                      prefetch
                       aria-current={active ? "page" : undefined}
                       onClick={() => setMoreOpen(false)}
                       className={`flex items-center gap-3 rounded-xl px-3 py-3 ${active ? "bg-subtle" : "active:bg-page"}`}
@@ -82,7 +83,7 @@ export function TabBar() {
             const active = isActive(pathname, t.href);
             return (
               <li key={t.href} className="flex-1">
-                <Link href={t.href} aria-current={active ? "page" : undefined} className={tabClass(active && !moreOpen)}>
+                <Link href={t.href} prefetch aria-current={active ? "page" : undefined} className={tabClass(active && !moreOpen)}>
                   <span className="text-lg leading-none font-semibold">{t.icon}</span>
                   <span className="text-[11px]">{t.label}</span>
                 </Link>
@@ -122,6 +123,7 @@ export function Sidebar({ name, initials, isAdmin }: { name: string; initials: s
             <Link
               key={t.href}
               href={t.href}
+              prefetch
               aria-current={active ? "page" : undefined}
               className={`flex items-center gap-3 rounded-[10px] px-3 py-2.5 text-sm ${
                 active ? "bg-subtle font-semibold text-ink" : "font-medium text-muted hover:bg-page"

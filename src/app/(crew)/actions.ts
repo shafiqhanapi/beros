@@ -54,7 +54,7 @@ export async function saveEntry(input: {
   if (!month) return fail("Pick a month.");
   const hours = Math.round(Number(input.hours) * 2) / 2;
   if (!(hours >= 0.5 && hours <= 24)) return fail("Hours must be between 0.5 and 24.");
-  const note = input.note?.trim() || null;
+  const note = input.note?.trim().slice(0, 200) || null;
 
   const supabase = await createClient();
   const me = await getMe();
@@ -158,7 +158,7 @@ export async function saveClaim(input: {
   receiptPath?: string | null;
 }): Promise<ActionResult> {
   if (!CATEGORIES.includes(input.category)) return fail("Choose a claim type.");
-  const description = input.category === "others" ? input.description?.trim() || "" : null;
+  const description = input.category === "others" ? input.description?.trim().slice(0, 120) || "" : null;
   if (input.category === "others" && !description) return fail("Tell us what you bought.");
   const amount = Math.round(Number(input.amount) * 100) / 100;
   if (!(amount > 0)) return fail("Enter an amount above $0.");
@@ -167,6 +167,7 @@ export async function saveClaim(input: {
   if (input.claimDate > sgDate()) return fail("The date can’t be in the future.");
 
   const me = await getMe();
+  if (input.receiptPath && !input.receiptPath.startsWith(`${me.id}/`)) return fail("The receipt must be one of your own uploads.");
   const supabase = await createClient();
   const row = {
     category: input.category,
@@ -212,7 +213,7 @@ export async function receiptUrl(path: string): Promise<{ url?: string; error?: 
 export async function updateContact(input: { phone?: string; paynowName?: string; paynowPhone?: string }): Promise<ActionResult> {
   const me = await getMe();
   const phone = input.phone ?? me.phone;
-  const paynowName = (input.paynowName ?? me.paynow_name)?.trim() || null;
+  const paynowName = (input.paynowName ?? me.paynow_name)?.trim().slice(0, 100) || null;
   const paynowPhone = input.paynowPhone ?? me.paynow_phone;
 
   if (input.phone !== undefined && !isSgMobile(input.phone)) return fail("Enter a valid 8-digit Singapore mobile number");

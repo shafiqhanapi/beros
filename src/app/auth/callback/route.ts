@@ -1,5 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { safePath } from "@/lib/safe-path";
 
 /**
  * Google sign-in and password-reset emails land here with ?code= to exchange
@@ -10,7 +11,7 @@ export async function GET(request: NextRequest) {
   const { searchParams, origin } = request.nextUrl;
   const code = searchParams.get("code");
   const nextParam = searchParams.get("next") ?? "/";
-  const next = nextParam.startsWith("/") && !nextParam.startsWith("//") ? nextParam : "/";
+  const next = safePath(nextParam);
 
   const oauthError = `${searchParams.get("error") ?? ""} ${searchParams.get("error_description") ?? ""}`.toLowerCase();
   if (oauthError.trim()) {

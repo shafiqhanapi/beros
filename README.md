@@ -78,3 +78,11 @@ Sent by `src/lib/notifications.ts` through the Resend API, from `BEROS Crew Port
 | Month marked as paid | The crew member ("Payment sent", unless they turned email notifications off) and active admins |
 
 Server env vars (Vercel): `RESEND_API_KEY` (required to send), optional `ADMIN_NOTIFY_EMAIL` (extra comma-separated admin recipients), `EMAIL_FROM`, `EMAIL_REPLY_TO`, `NEXT_PUBLIC_SITE_URL`. A failed email is logged and never blocks the action.
+
+## Security
+
+- **Database hardening:** run `supabase/security-hardening.sql` once after `setup.sql`. It adds triggers and a policy so crew can only create draft timesheets, only submit or withdraw them, always log at their real rate on their own assigned jobs (once each, dated in the month), and can't pre-approve, pre-pay or future-date claims or attach someone else's receipt. It also sets upload limits on the receipts (10 MB, images/PDF) and payslips (5 MB, PDF) buckets and makes the "To log" view respect RLS.
+- **Headers** (`next.config.ts`): Content-Security-Policy, X-Frame-Options DENY, nosniff, Referrer-Policy, Permissions-Policy, HSTS, COOP; no `X-Powered-By`.
+- **Not indexed:** `robots.txt` disallows everything, every response has `X-Robots-Tag: noindex, nofollow…`, and pages have a robots noindex meta tag. All pages except sign-in and password reset require an account.
+- **Redirects** after sign-in only go to paths on this site (`src/lib/safe-path.ts`).
+- **Dependencies:** `postcss` is pinned to a patched version via `overrides` (`npm audit` reports 0 vulnerabilities).

@@ -4,6 +4,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useState } from "react";
 import { Logo } from "@/components/Logo";
 import { createClient } from "@/lib/supabase/client";
+import { safePath } from "@/lib/safe-path";
 
 /**
  * Landing page for invite links. Supabase's default invite email sends the
@@ -18,7 +19,7 @@ function Accept() {
 
   useEffect(() => {
     const next = params.get("next") ?? "/reset-password";
-    const safeNext = next.startsWith("/") && !next.startsWith("//") ? next : "/";
+    const safeNext = safePath(next);
     const hash = new URLSearchParams(window.location.hash.slice(1));
     const access_token = hash.get("access_token");
     const refresh_token = hash.get("refresh_token");

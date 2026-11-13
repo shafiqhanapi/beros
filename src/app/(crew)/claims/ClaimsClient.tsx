@@ -19,6 +19,10 @@ const TYPES: { value: ClaimCategory; label: string }[] = [
 
 const MAX_RECEIPT_MB = 10;
 
+/** Content type for the receipts bucket (some phones send an empty type). */
+const RECEIPT_TYPES: Record<string, string> = { jpg: "image/jpeg", jpeg: "image/jpeg", png: "image/png", webp: "image/webp", heic: "image/heic", heif: "image/heif", pdf: "application/pdf" };
+const receiptType = (f: File) => f.type || RECEIPT_TYPES[(f.name.split(".").pop() || "").toLowerCase()] || "application/octet-stream";
+
 export function ClaimsClient({ claims, crewId, month, openNew }: { claims: ClaimRow[]; crewId: string; month: string; openNew: boolean }) {
   const router = useRouter();
   const pathname = usePathname();
@@ -171,7 +175,7 @@ function ClaimSheet({
       if (file) {
         const ext = (file.name.split(".").pop() || "jpg").toLowerCase().replace(/[^a-z0-9]/g, "");
         const path = `${crewId}/${crypto.randomUUID()}.${ext}`;
-        const { error: upErr } = await createClient().storage.from("receipts").upload(path, file, { contentType: file.type });
+        const { error: upErr } = await createClient().storage.from("receipts").upload(path, file, { contentType: receiptType(file) });
         if (upErr) return setError(`Receipt upload failed: ${upErr.message}`);
         receiptPath = path;
       }
@@ -296,7 +300,7 @@ function ClaimSheet({
         <input
           ref={fileRef}
           type="file"
-          accept="image/*,application/pdf"
+          accept="image/jpeg,image/png,image/webp,image/heic,image/heif,application/pdf"
           className="hidden"
           onChange={(e) => {
             const f = e.target.files?.[0] ?? null;

@@ -8,8 +8,9 @@ import { btnPrimary, ErrorNote, inputClass } from "@/components/ui";
 import { PasswordInput } from "@/components/PasswordInput";
 import { createClient } from "@/lib/supabase/client";
 import { setRememberChoice } from "@/lib/remember";
+import { safePath } from "@/lib/safe-path";
 
-const safeNext = (n?: string) => (n && n.startsWith("/") && !n.startsWith("//") ? n : "/");
+const safeNext = (n?: string) => safePath(n);
 
 export function LoginForm({ initialError, next }: { initialError: string | null; next?: string }) {
   const router = useRouter();

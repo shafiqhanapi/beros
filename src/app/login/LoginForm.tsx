@@ -17,33 +17,21 @@ export function LoginForm({ initialError, next }: { initialError: string | null;
   const [password, setPassword] = useState("");
   const [remember, setRemember] = useState(true);
   const [error, setError] = useState<string | null>(initialError);
-  const [busy, setBusy] = useState<"password" | "google" | null>(null);
+  const [busy, setBusy] = useState(false);
 
   async function signIn(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
-    setBusy("password");
+    setBusy(true);
     setRememberChoice(remember);
     const { error } = await createClient().auth.signInWithPassword({ email: email.trim(), password });
     if (error) {
-      setBusy(null);
+      setBusy(false);
       setError(error.message === "Invalid login credentials" ? "Incorrect email or password." : error.message);
       return;
     }
     router.replace(safeNext(next));
     router.refresh();
-  }
-
-  async function google() {
-    setError(null);
-    setBusy("google");
-    setRememberChoice(remember);
-    const redirectTo = `${location.origin}/auth/callback?next=${encodeURIComponent(safeNext(next))}`;
-    const { error } = await createClient().auth.signInWithOAuth({ provider: "google", options: { redirectTo } });
-    if (error) {
-      setBusy(null);
-      setError(error.message);
-    }
   }
 
   return (
@@ -88,25 +76,10 @@ export function LoginForm({ initialError, next }: { initialError: string | null;
 
       <ErrorNote>{error}</ErrorNote>
 
-      <button type="submit" disabled={busy !== null} className={btnPrimary}>
-        {busy === "password" ? "Signing in…" : "Sign in"}
+      <button type="submit" disabled={busy} className={btnPrimary}>
+        {busy ? "Signing in…" : "Sign in"}
       </button>
 
-      <div className="flex items-center gap-3">
-        <span className="h-px flex-1 bg-field" />
-        <span className="text-xs font-medium text-[#8c8c8c]">or</span>
-        <span className="h-px flex-1 bg-field" />
-      </div>
-
-      <button
-        type="button"
-        onClick={google}
-        disabled={busy !== null}
-        className="flex items-center justify-center gap-2.5 rounded-[14px] border border-field bg-card py-[15px] disabled:opacity-60"
-      >
-        <span className="text-[17px] font-bold text-[#4285f5]">G</span>
-        <span className="text-[15px] font-semibold">{busy === "google" ? "Opening Google…" : "Continue with Google"}</span>
-      </button>
     </form>
   );
 }

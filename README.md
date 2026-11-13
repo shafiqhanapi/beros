@@ -30,7 +30,7 @@ npm run dev
 ## Supabase setup (once)
 
 1. In the SQL editor, run the blocks from SPEC.md → "Supabase setup" in order: services/add-ons/bookings, the main crew script, booking assignments, then the policies block.
-2. Authentication → Providers: enable Email and Google. Turn off open sign-ups.
+2. Authentication → Providers: enable Email (Google sign-in is not used). Turn off open sign-ups.
 3. Authentication → URL Configuration: Site URL `https://crew.beros.online`; add `https://crew.beros.online/auth/callback` (and `http://localhost:3000/auth/callback` for local dev) to Redirect URLs.
 4. Sign up once with your own email, then make yourself admin:
    `update crew set role = 'admin', status = 'active' where email = '<your email>';`

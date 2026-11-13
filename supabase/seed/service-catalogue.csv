@@ -1,0 +1,47 @@
+﻿Service,Option,Price (SGD),Duration,Fabric Protector Spray (+SGD 25),Disinfect & Sanitize (+SGD 25),Category,Status,Notes
+Post Renovation Cleaning,2-Room Flexi,370,2–3 hrs,FALSE,FALSE,Post-Renovation,Active,
+Post Renovation Cleaning,2-Room Standard,390,2–3 hrs,FALSE,FALSE,Post-Renovation,Active,
+Post Renovation Cleaning,3-Room,460,4–5 hrs,FALSE,FALSE,Post-Renovation,Active,
+Post Renovation Cleaning,4-Room,560,4–5 hrs,FALSE,FALSE,Post-Renovation,Active,
+Post Renovation Cleaning,5-Room,650,5–6 hrs,FALSE,FALSE,Post-Renovation,Active,
+Post Renovation Cleaning,Jumbo / EA,760,6–7 hrs,FALSE,FALSE,Post-Renovation,Active,
+Post Renovation Cleaning,Maisonette,850,6–7 hrs,FALSE,FALSE,Post-Renovation,Active,
+Formaldehyde Removal,2-Room Flexi,360,,FALSE,FALSE,Post-Renovation,Active,Estimated from SGD 360–640 range
+Formaldehyde Removal,2-Room Standard,370,,FALSE,FALSE,Post-Renovation,Active,Estimated from SGD 360–640 range
+Formaldehyde Removal,3-Room,410,,FALSE,FALSE,Post-Renovation,Active,Estimated from SGD 360–640 range
+Formaldehyde Removal,4-Room,470,,FALSE,FALSE,Post-Renovation,Active,Estimated from SGD 360–640 range
+Formaldehyde Removal,5-Room,520,,FALSE,FALSE,Post-Renovation,Active,Estimated from SGD 360–640 range
+Formaldehyde Removal,Jumbo / EA,590,,FALSE,FALSE,Post-Renovation,Active,Estimated from SGD 360–640 range
+Formaldehyde Removal,Maisonette,640,,FALSE,FALSE,Post-Renovation,Active,Estimated from SGD 360–640 range
+Floor Tile Scrubbing,2-Room Flexi,360,,FALSE,FALSE,Post-Renovation,Active,Estimated from SGD 360–640 range
+Floor Tile Scrubbing,2-Room Standard,370,,FALSE,FALSE,Post-Renovation,Active,Estimated from SGD 360–640 range
+Floor Tile Scrubbing,3-Room,410,,FALSE,FALSE,Post-Renovation,Active,Estimated from SGD 360–640 range
+Floor Tile Scrubbing,4-Room,470,,FALSE,FALSE,Post-Renovation,Active,Estimated from SGD 360–640 range
+Floor Tile Scrubbing,5-Room,520,,FALSE,FALSE,Post-Renovation,Active,Estimated from SGD 360–640 range
+Floor Tile Scrubbing,Jumbo / EA,590,,FALSE,FALSE,Post-Renovation,Active,Estimated from SGD 360–640 range
+Floor Tile Scrubbing,Maisonette,640,,FALSE,FALSE,Post-Renovation,Active,Estimated from SGD 360–640 range
+Paint Stain Removal,2 hrs,160,2 hrs,FALSE,FALSE,Post-Renovation,Active,SGD 80 per hour
+Paint Stain Removal,4 hrs,320,4 hrs,FALSE,FALSE,Post-Renovation,Active,SGD 80 per hour
+Paint Stain Removal,6 hrs (max),480,6 hrs,FALSE,FALSE,Post-Renovation,Active,"SGD 80 per hour; 6 hrs is the maximum"
+Window Cleaning,Bedrooms,180,2–3 hrs,FALSE,FALSE,Home,Active,
+Window Cleaning,Flat Living Room,240,2–3 hrs,FALSE,FALSE,Home,Active,
+Fan Cleaning,Standard,120,1–2 hrs,FALSE,FALSE,Home,Active,
+Carpet Cleaning,Up to 250cm - Standard,120,1–3 hrs,TRUE,TRUE,Fabric & Upholstery,Active,
+Carpet Cleaning,Up to 300cm - Large,150,1–3 hrs,TRUE,TRUE,Fabric & Upholstery,Active,
+Carpet Cleaning,Up to 350cm - Extra Large,180,1–3 hrs,TRUE,TRUE,Fabric & Upholstery,Active,
+Carpet Cleaning,Kitchen Runner,110,1–2 hrs,TRUE,TRUE,Fabric & Upholstery,Active,
+Mattress Cleaning,Baby Cot Mattress,110,1 hr 30 min,TRUE,TRUE,Fabric & Upholstery,Active,
+Mattress Cleaning,Single / Super Single,120,1 hr 30 min,TRUE,TRUE,Fabric & Upholstery,Active,
+Mattress Cleaning,Queen / King,150,1 hr 30 min,TRUE,TRUE,Fabric & Upholstery,Active,
+Curtain Cleaning,Curtains – Steam Clean (per pc),150,1 hr 30 min,FALSE,FALSE,Fabric & Upholstery,Active,Priced per piece
+Curtain Cleaning,Blinds (per pc),180,1 hr 30 min,FALSE,FALSE,Fabric & Upholstery,Active,Priced per piece
+Strollers/Cot Cleaning,Car Baby Seat,85,1 hr 30 min,FALSE,FALSE,Baby Gear,Active,
+Strollers/Cot Cleaning,Stroller,95,1 hr 30 min,FALSE,FALSE,Baby Gear,Active,
+Strollers/Cot Cleaning,Baby Cot,120,1 hr 30 min,FALSE,FALSE,Baby Gear,Active,
+Car Fumigation & Interior Deep Cleaning,Fumigation Only,85,1 hr 30 min,FALSE,FALSE,Car,Active,Interior Deep Cleaning option removed — service name may need updating
+Car Fumigation & Interior Deep Cleaning,Car Mat Cleaning,,,FALSE,FALSE,Car,Draft,New — price and duration to confirm
+Rental - Floor Scrubber,Per day,300,Per day,FALSE,FALSE,Equipment Rental,Active,SGD 300 per day
+Rental - Extraction Cleaner Puzzi 10/1,Base rate,110,,FALSE,FALSE,Equipment Rental,Active,"Listed as ""From SGD 110"". Tagline: Heavy-Duty Cleaning, Made Simple."
+Rental - Steam Cleaner SC2,Base rate,90,,FALSE,FALSE,Equipment Rental,Active,"Listed as ""From SGD 90"""
+Rental - Pressure Washer K2,Base rate,65,,FALSE,FALSE,Equipment Rental,Active,"Listed as ""From SGD 65"""
+Rental - Wet & Dry Vacuum WD 1,Base rate,60,,FALSE,FALSE,Equipment Rental,Active,"Listed as ""From SGD 60"""

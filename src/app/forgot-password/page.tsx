@@ -9,7 +9,7 @@ import { createClient } from "@/lib/supabase/client";
 
 async function sendResetLink(email: string) {
   return createClient().auth.resetPasswordForEmail(email.trim(), {
-    redirectTo: `${location.origin}/auth/callback?next=/reset-password`,
+    redirectTo: `${location.origin}/auth/confirm?next=/reset-password`,
   });
 }
 

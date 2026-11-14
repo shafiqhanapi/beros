@@ -27,7 +27,11 @@ function Accept() {
     const supabase = createClient();
 
     (async () => {
-      if (hash.get("error_description")) return setError(hash.get("error_description"));
+      // Expired or already-used link: send them to the self-service page.
+      if (hash.get("error_description") || hash.get("error_code")) {
+        router.replace("/auth/link-expired?type=invite");
+        return;
+      }
       if (access_token && refresh_token) {
         const { error } = await supabase.auth.setSession({ access_token, refresh_token });
         if (error) return setError(error.message);
@@ -48,9 +52,9 @@ function Accept() {
       {error ? (
         <div className="flex flex-col gap-3 rounded-2xl border border-line bg-card p-6 text-sm">
           <p className="font-semibold">This invite link didn’t work</p>
-          <p className="text-muted">{error} Links expire after 24 hours; ask your admin to resend the invite.</p>
-          <a href="/login" className="font-semibold underline">
-            Go to sign in
+          <p className="text-muted">{error}</p>
+          <a href="/auth/link-expired?type=invite" className="font-semibold underline">
+            Send me a new link
           </a>
         </div>
       ) : (

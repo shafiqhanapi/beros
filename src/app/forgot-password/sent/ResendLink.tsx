@@ -10,7 +10,7 @@ export function ResendLink({ email }: { email: string }) {
   async function resend() {
     setState("sending");
     const { error } = await createClient().auth.resetPasswordForEmail(email, {
-      redirectTo: `${location.origin}/auth/callback?next=/reset-password`,
+      redirectTo: `${location.origin}/auth/confirm?next=/reset-password`,
     });
     setState(error ? "error" : "sent");
   }

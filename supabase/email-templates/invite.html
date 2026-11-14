@@ -32,7 +32,7 @@
               <table role="presentation" cellpadding="0" cellspacing="0" style="margin:0 0 24px;">
                 <tr>
                   <td style="border-radius:12px;background:#0d0d0d;">
-                    <a href="{{ .ConfirmationURL }}" style="display:inline-block;padding:14px 28px;font-size:15px;font-weight:600;color:#ffffff;text-decoration:none;border-radius:12px;">Set up my account</a>
+                    <a href="{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&type=invite&next=/reset-password" style="display:inline-block;padding:14px 28px;font-size:15px;font-weight:600;color:#ffffff;text-decoration:none;border-radius:12px;">Set up my account</a>
                   </td>
                 </tr>
               </table>
@@ -58,7 +58,7 @@
               </table>
 
               <p style="margin:0;font-size:13px;line-height:20px;color:#737373;">
-                This link works once and expires in 24 hours. If it has expired, ask your admin to resend the invite.
+                This link works once and expires in 24 hours. If it has expired, open <a href="{{ .SiteURL }}/auth/link-expired?type=invite" style="color:#0d0d0d;">crew.beros.online</a> and request a new link with your email.
               </p>
             </td>
           </tr>

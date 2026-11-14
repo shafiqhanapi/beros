@@ -86,3 +86,7 @@ Server env vars (Vercel): `RESEND_API_KEY` (required to send), optional `ADMIN_N
 - **Not indexed:** `robots.txt` disallows everything, every response has `X-Robots-Tag: noindex, nofollow…`, and pages have a robots noindex meta tag. All pages except sign-in and password reset require an account.
 - **Redirects** after sign-in only go to paths on this site (`src/lib/safe-path.ts`).
 - **Dependencies:** `postcss` is pinned to a patched version via `overrides` (`npm audit` reports 0 vulnerabilities).
+
+## Email links (invite and password reset)
+
+Supabase email links last at most 24 hours. The templates in `supabase/email-templates/` link to `/auth/confirm?token_hash=…&type=invite|recovery`, which verifies the link on the server only when the person taps the button, so it works in any browser or email app and can't be used up by email scanners. Expired or used links go to `/auth/link-expired`, where crew can request a fresh link with their email (works for invited crew who never finished setting up). Older links still work through `/auth/accept` and `/auth/callback`.

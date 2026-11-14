@@ -252,7 +252,7 @@ export async function inviteCrew(input: CrewInput): Promise<ActionResult> {
   if (taken) return fail("This email is already in use");
 
   const { data, error } = await adminClient().auth.admin.inviteUserByEmail(email, {
-    redirectTo: `${await siteOrigin()}/auth/accept?next=/reset-password`,
+    redirectTo: `${await siteOrigin()}/auth/confirm?next=/reset-password`,
     data: { full_name: input.fullName.trim() },
   });
   if (error || !data.user) {
@@ -286,7 +286,7 @@ export async function resendInvite(crewId: string): Promise<ActionResult> {
   if (!hasServiceRole) return fail("Resending invites needs SUPABASE_SERVICE_ROLE_KEY set in Vercel.");
   const { data: crew } = await supabase.from("crew").select("email, full_name, status").eq("id", crewId).single();
   if (!crew) return fail("Crew member not found.");
-  const redirectTo = `${await siteOrigin()}/auth/accept?next=/reset-password`;
+  const redirectTo = `${await siteOrigin()}/auth/confirm?next=/reset-password`;
   const { error } = await adminClient().auth.admin.inviteUserByEmail(crew.email as string, { redirectTo, data: { full_name: crew.full_name } });
   if (error) {
     // Already confirmed: send a set-password (recovery) email instead.

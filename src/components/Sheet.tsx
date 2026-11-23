@@ -31,7 +31,7 @@ export function Sheet({
 
   if (!open) return null;
   return (
-    <div className="fixed inset-0 z-50 flex items-end justify-center md:items-center" role="dialog" aria-modal aria-label={title}>
+    <div className="fixed inset-0 z-[60] flex items-end justify-center md:items-center" role="dialog" aria-modal aria-label={title}>
       <button aria-label="Close" className="absolute inset-0 bg-ink/40" onClick={onClose} />
       <div className="relative flex max-h-[92dvh] w-full flex-col gap-5 overflow-y-auto rounded-t-3xl bg-card px-6 pt-3 pb-[calc(34px+env(safe-area-inset-bottom))] md:max-w-[440px] md:rounded-3xl md:pt-6 md:pb-6">
         <div className="flex justify-center md:hidden">
@@ -70,7 +70,7 @@ export function ConfirmDialog({
 }) {
   if (!open) return null;
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center px-6" role="alertdialog" aria-modal aria-label={title}>
+    <div className="fixed inset-0 z-[60] flex items-center justify-center px-6" role="alertdialog" aria-modal aria-label={title}>
       <button aria-label="Close" className="absolute inset-0 bg-ink/40" onClick={onCancel} />
       <div className="relative flex w-full max-w-[342px] flex-col gap-5 rounded-3xl bg-card p-6">
         <div className="flex flex-col gap-2">

@@ -14,6 +14,7 @@ const TABS = [
 
 /** Pages in the mobile "More" menu. Add future pages here. */
 const MORE = [
+  { href: "/services", label: "Services", icon: "◇", hint: "Service options, crew size and prices" },
   { href: "/payslips", label: "Payslips", icon: "$", hint: "Download your monthly payslips" },
   { href: "/profile", label: "Profile", icon: "○", hint: "Phone, PayNow and settings" },
 ];

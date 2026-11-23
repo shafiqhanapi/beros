@@ -77,52 +77,52 @@ end $$;
 
 -- 1. Categories ---------------------------------------------------------------
 
-select pg_temp.ensure_category('Moving In BTO Flats', 0, array['Post-Renovation']);
+select pg_temp.ensure_category('Home Cleaning', 0, array['Moving In BTO Flats', 'Post-Renovation']);
 select pg_temp.ensure_category('Fabric & Leather Care', 1, array['Fabric & Upholstery']);
 select pg_temp.ensure_category('Car & Baby Gear (Pick Up & Delivery)', 2, array['Car & Baby Gear', 'Baby Gear']);
 select pg_temp.ensure_category('Equipment Rental (Per Day)', 3, array['Equipment Rental']);
-select pg_temp.ensure_category('Transportation Fees & Free Services', 4);
+select pg_temp.ensure_category('Transportation Fees & Services', 4, array['Transportation Fees & Free Services']);
 
--- 2. Moving In BTO Flats ------------------------------------------------------
+-- 2. Home Cleaning ------------------------------------------------------------
 
-select pg_temp.ensure_service('Moving In BTO Flats', 'Post Renovation Cleaning', 0);
-select pg_temp.ensure_variant('Moving In BTO Flats', 'Post Renovation Cleaning', '2-Room Flexi',    370, 2.5, 0);
-select pg_temp.ensure_variant('Moving In BTO Flats', 'Post Renovation Cleaning', '2-Room Standard', 390, 2.5, 1);
-select pg_temp.ensure_variant('Moving In BTO Flats', 'Post Renovation Cleaning', '3-Room',          460, 3,   2);
-select pg_temp.ensure_variant('Moving In BTO Flats', 'Post Renovation Cleaning', '4-Room',          560, 5,   3);
-select pg_temp.ensure_variant('Moving In BTO Flats', 'Post Renovation Cleaning', '5-Room',          650, 5,   4);
-select pg_temp.ensure_variant('Moving In BTO Flats', 'Post Renovation Cleaning', 'Jumbo / EA',      840, 6,   5);
-select pg_temp.ensure_variant('Moving In BTO Flats', 'Post Renovation Cleaning', 'Maisonette',      920, 6,   6);
+select pg_temp.ensure_service('Home Cleaning', 'Post Renovation Cleaning', 0);
+select pg_temp.ensure_variant('Home Cleaning', 'Post Renovation Cleaning', '2-Room Flexi',    370, 2.5, 0);
+select pg_temp.ensure_variant('Home Cleaning', 'Post Renovation Cleaning', '2-Room Standard', 390, 2.5, 1);
+select pg_temp.ensure_variant('Home Cleaning', 'Post Renovation Cleaning', '3-Room',          460, 3,   2);
+select pg_temp.ensure_variant('Home Cleaning', 'Post Renovation Cleaning', '4-Room',          560, 5,   3);
+select pg_temp.ensure_variant('Home Cleaning', 'Post Renovation Cleaning', '5-Room',          650, 5,   4);
+select pg_temp.ensure_variant('Home Cleaning', 'Post Renovation Cleaning', 'Jumbo / EA',      840, 6,   5);
+select pg_temp.ensure_variant('Home Cleaning', 'Post Renovation Cleaning', 'Maisonette',      920, 6,   6);
 
-select pg_temp.ensure_service('Moving In BTO Flats', 'Formaldehyde Removal (New)', 1, array['Formaldehyde Removal']);
-select pg_temp.ensure_variant('Moving In BTO Flats', 'Formaldehyde Removal (New)', '2-Room Flexi',    250, 1.5, 0);
-select pg_temp.ensure_variant('Moving In BTO Flats', 'Formaldehyde Removal (New)', '2-Room Standard', 250, 1.5, 1);
-select pg_temp.ensure_variant('Moving In BTO Flats', 'Formaldehyde Removal (New)', '3-Room',          295, 2,   2);
-select pg_temp.ensure_variant('Moving In BTO Flats', 'Formaldehyde Removal (New)', '4-Room',          340, 2.5, 3);
-select pg_temp.ensure_variant('Moving In BTO Flats', 'Formaldehyde Removal (New)', '5-Room',          380, 3,   4);
-select pg_temp.ensure_variant('Moving In BTO Flats', 'Formaldehyde Removal (New)', 'Jumbo / EA',      430, 3.5, 5);
-select pg_temp.ensure_variant('Moving In BTO Flats', 'Formaldehyde Removal (New)', 'Maisonette',      430, 3.5, 6);
+select pg_temp.ensure_service('Home Cleaning', 'Formaldehyde Removal (New)', 1, array['Formaldehyde Removal']);
+select pg_temp.ensure_variant('Home Cleaning', 'Formaldehyde Removal (New)', '2-Room Flexi',    250, 1.5, 0);
+select pg_temp.ensure_variant('Home Cleaning', 'Formaldehyde Removal (New)', '2-Room Standard', 250, 1.5, 1);
+select pg_temp.ensure_variant('Home Cleaning', 'Formaldehyde Removal (New)', '3-Room',          295, 2,   2);
+select pg_temp.ensure_variant('Home Cleaning', 'Formaldehyde Removal (New)', '4-Room',          340, 2.5, 3);
+select pg_temp.ensure_variant('Home Cleaning', 'Formaldehyde Removal (New)', '5-Room',          380, 3,   4);
+select pg_temp.ensure_variant('Home Cleaning', 'Formaldehyde Removal (New)', 'Jumbo / EA',      430, 3.5, 5);
+select pg_temp.ensure_variant('Home Cleaning', 'Formaldehyde Removal (New)', 'Maisonette',      430, 3.5, 6);
 
-select pg_temp.ensure_service('Moving In BTO Flats', 'Floor Tile Scrubbing', 2);
-select pg_temp.ensure_variant('Moving In BTO Flats', 'Floor Tile Scrubbing', '2-Room Flexi',    230, 2,   0);
-select pg_temp.ensure_variant('Moving In BTO Flats', 'Floor Tile Scrubbing', '2-Room Standard', 230, 2,   1);
-select pg_temp.ensure_variant('Moving In BTO Flats', 'Floor Tile Scrubbing', '3-Room',          330, 3,   2);
-select pg_temp.ensure_variant('Moving In BTO Flats', 'Floor Tile Scrubbing', '4-Room',          380, 3.5, 3);
-select pg_temp.ensure_variant('Moving In BTO Flats', 'Floor Tile Scrubbing', '5-Room',          430, 4,   4);
-select pg_temp.ensure_variant('Moving In BTO Flats', 'Floor Tile Scrubbing', 'Jumbo / EA',      480, 4.5, 5);
-select pg_temp.ensure_variant('Moving In BTO Flats', 'Floor Tile Scrubbing', 'Maisonette',      530, 5,   6);
+select pg_temp.ensure_service('Home Cleaning', 'Floor Tile Scrubbing', 2);
+select pg_temp.ensure_variant('Home Cleaning', 'Floor Tile Scrubbing', '2-Room Flexi',    230, 2,   0);
+select pg_temp.ensure_variant('Home Cleaning', 'Floor Tile Scrubbing', '2-Room Standard', 230, 2,   1);
+select pg_temp.ensure_variant('Home Cleaning', 'Floor Tile Scrubbing', '3-Room',          330, 3,   2);
+select pg_temp.ensure_variant('Home Cleaning', 'Floor Tile Scrubbing', '4-Room',          380, 3.5, 3);
+select pg_temp.ensure_variant('Home Cleaning', 'Floor Tile Scrubbing', '5-Room',          430, 4,   4);
+select pg_temp.ensure_variant('Home Cleaning', 'Floor Tile Scrubbing', 'Jumbo / EA',      480, 4.5, 5);
+select pg_temp.ensure_variant('Home Cleaning', 'Floor Tile Scrubbing', 'Maisonette',      530, 5,   6);
 
-select pg_temp.ensure_service('Moving In BTO Flats', 'Paint Stain Removal', 3);
-select pg_temp.ensure_variant('Moving In BTO Flats', 'Paint Stain Removal', '2 hrs',       160, 2, 0);
-select pg_temp.ensure_variant('Moving In BTO Flats', 'Paint Stain Removal', '4 hrs',       320, 4, 1);
-select pg_temp.ensure_variant('Moving In BTO Flats', 'Paint Stain Removal', '6 hrs (max)', 480, 6, 2);
+select pg_temp.ensure_service('Home Cleaning', 'Paint Stain Removal', 3);
+select pg_temp.ensure_variant('Home Cleaning', 'Paint Stain Removal', '2 hrs',       160, 2, 0);
+select pg_temp.ensure_variant('Home Cleaning', 'Paint Stain Removal', '4 hrs',       320, 4, 1);
+select pg_temp.ensure_variant('Home Cleaning', 'Paint Stain Removal', '6 hrs (max)', 480, 6, 2);
 
-select pg_temp.ensure_service('Moving In BTO Flats', 'Window Cleaning', 4);
-select pg_temp.ensure_variant('Moving In BTO Flats', 'Window Cleaning', 'Bedrooms',         180, 2.5, 0);
-select pg_temp.ensure_variant('Moving In BTO Flats', 'Window Cleaning', 'Flat Living Room', 240, 2.5, 1);
+select pg_temp.ensure_service('Home Cleaning', 'Window Cleaning', 4);
+select pg_temp.ensure_variant('Home Cleaning', 'Window Cleaning', 'Bedrooms',         180, 2.5, 0);
+select pg_temp.ensure_variant('Home Cleaning', 'Window Cleaning', 'Flat Living Room', 240, 2.5, 1);
 
-select pg_temp.ensure_service('Moving In BTO Flats', 'Fan Cleaning', 5);
-select pg_temp.ensure_variant('Moving In BTO Flats', 'Fan Cleaning', 'Standard (per pc)', 120, 1.5, 0, array['Standard']);
+select pg_temp.ensure_service('Home Cleaning', 'Fan Cleaning', 5);
+select pg_temp.ensure_variant('Home Cleaning', 'Fan Cleaning', 'Standard (per pc)', 120, 1.5, 0, array['Standard']);
 
 -- 3. Fabric & Leather Care ----------------------------------------------------
 
@@ -179,17 +179,17 @@ select pg_temp.ensure_variant('Equipment Rental (Per Day)', 'Wet & Dry Vacuum WD
 select pg_temp.ensure_service('Equipment Rental (Per Day)', 'Floor Dryer', 5);
 select pg_temp.ensure_variant('Equipment Rental (Per Day)', 'Floor Dryer', 'Per day', 60, null, 0);
 
--- 6. Transportation Fees & Free Services --------------------------------------
+-- 6. Transportation Fees & Services -------------------------------------------
 
-select pg_temp.ensure_service('Transportation Fees & Free Services', 'Transportation Fee', 0);
-select pg_temp.ensure_variant('Transportation Fees & Free Services', 'Transportation Fee', 'One way', 10, null, 0);
-select pg_temp.ensure_variant('Transportation Fees & Free Services', 'Transportation Fee', 'Two way', 20, null, 1);
+select pg_temp.ensure_service('Transportation Fees & Services', 'Transportation Fee', 0);
+select pg_temp.ensure_variant('Transportation Fees & Services', 'Transportation Fee', 'One way', 10, null, 0);
+select pg_temp.ensure_variant('Transportation Fees & Services', 'Transportation Fee', 'Two way', 20, null, 1);
 
-select pg_temp.ensure_service('Transportation Fees & Free Services', 'Free Services', 1);
-select pg_temp.ensure_variant('Transportation Fees & Free Services', 'Free Services', 'Air Quality Check',     0, null, 0);
-select pg_temp.ensure_variant('Transportation Fees & Free Services', 'Free Services', 'Request for Quotation', 0, null, 1);
-select pg_temp.ensure_variant('Transportation Fees & Free Services', 'Free Services', 'Cleaning Consultation', 0, null, 2);
-select pg_temp.ensure_variant('Transportation Fees & Free Services', 'Free Services', 'Site Visit',            0, null, 3);
+select pg_temp.ensure_service('Transportation Fees & Services', 'Free Services', 1);
+select pg_temp.ensure_variant('Transportation Fees & Services', 'Free Services', 'Air Quality Check',     0, null, 0);
+select pg_temp.ensure_variant('Transportation Fees & Services', 'Free Services', 'Request for Quotation', 0, null, 1);
+select pg_temp.ensure_variant('Transportation Fees & Services', 'Free Services', 'Cleaning Consultation', 0, null, 2);
+select pg_temp.ensure_variant('Transportation Fees & Services', 'Free Services', 'Site Visit',            0, null, 3);
 
 -- 7. Add-ons ($25 per item, fabric & leather jobs) ----------------------------
 
@@ -225,9 +225,9 @@ where v.service_id = s.id
     'Baby Cot Mattress', 'Single / Super Single', 'Queen / King', 'Baby Cot',
     'Curtains (per pc)', 'Blinds (per pc)');
 
--- Old categories that are now empty (Home → Moving In BTO Flats, Car → Car & Baby Gear).
+-- Old categories that are now empty (Home → Home Cleaning, Car → Car & Baby Gear).
 update public.service_categories c set active = false, sort_order = 99
-where c.name not in ('Moving In BTO Flats', 'Fabric & Leather Care', 'Car & Baby Gear (Pick Up & Delivery)', 'Equipment Rental (Per Day)', 'Transportation Fees & Free Services')
+where c.name not in ('Home Cleaning', 'Fabric & Leather Care', 'Car & Baby Gear (Pick Up & Delivery)', 'Equipment Rental (Per Day)', 'Transportation Fees & Services')
   and not exists (select 1 from public.services s where s.category_id = c.id and s.active);
 
 commit;

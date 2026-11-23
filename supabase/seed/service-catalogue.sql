@@ -154,6 +154,13 @@ select pg_temp.ensure_service('Fabric & Leather Care', 'Curtain Steam Cleaning',
 select pg_temp.ensure_variant('Fabric & Leather Care', 'Curtain Steam Cleaning', 'Curtains (per pc)', 150, 0.5, 0, array['Curtains – Steam Clean (per pc)']);
 select pg_temp.ensure_variant('Fabric & Leather Care', 'Curtain Steam Cleaning', 'Blinds (per pc)',   180, 0.5, 1);
 
+select pg_temp.ensure_service('Fabric & Leather Care', 'Dining Chair & Table', 4);
+select pg_temp.ensure_variant('Fabric & Leather Care', 'Dining Chair & Table', '1–4 Seater',                   120, null, 0);
+select pg_temp.ensure_variant('Fabric & Leather Care', 'Dining Chair & Table', '5–6 Seater',                   150, null, 1);
+select pg_temp.ensure_variant('Fabric & Leather Care', 'Dining Chair & Table', '7–10 Seater',                  200, null, 2);
+select pg_temp.ensure_variant('Fabric & Leather Care', 'Dining Chair & Table', 'Add-on: Extra Chair (per pc)',  40, null, 3);
+select pg_temp.ensure_variant('Fabric & Leather Care', 'Dining Chair & Table', 'Add-on: Bench',                 60, null, 4);
+
 -- 4. Car & Baby Gear (pick up & delivery) -------------------------------------
 
 select pg_temp.ensure_service('Car & Baby Gear (Pick Up & Delivery)', 'Car Mat Cleaning', 0);

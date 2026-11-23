@@ -44,8 +44,6 @@ export function CatalogueClient({ catalogue }: { catalogue: Catalogue }) {
       }
     });
 
-  const toggle = (kind: "category" | "service" | "variant" | "addOn", id: string, active: boolean) => run(() => setCatalogueActive(kind, id, active));
-
   return (
     <>
       <div className="flex items-center gap-3">
@@ -73,11 +71,11 @@ export function CatalogueClient({ catalogue }: { catalogue: Catalogue }) {
       <ErrorNote>{error}</ErrorNote>
 
       {view === "addons" ? (
-        <AddOnsTable addOns={addOns} categories={categories} onEdit={setAddOnPanel} onToggle={(id, on) => toggle("addOn", id, on)} busy={pending} />
+        <AddOnsTable addOns={addOns} categories={categories} onEdit={setAddOnPanel} />
       ) : (
         <div className="flex flex-col gap-4 md:flex-row md:items-start">
           {/* Categories */}
-          <aside className="flex flex-col rounded-2xl border border-line bg-card p-2 md:w-[200px] md:shrink-0 md:p-3">
+          <aside className="flex min-w-0 flex-col rounded-2xl border border-line bg-card p-2 md:order-last md:w-[240px] md:shrink-0 md:p-3">
             <div className="flex items-center px-2 pt-1 pb-2">
               <span className="flex-1 text-[11px] font-semibold tracking-[0.66px] text-muted uppercase">Categories</span>
               <button type="button" aria-label="Add category" onClick={() => setNewCat("")} className="px-1 text-lg leading-none font-semibold">
@@ -92,10 +90,10 @@ export function CatalogueClient({ catalogue }: { catalogue: Catalogue }) {
                     key={c.id}
                     type="button"
                     onClick={() => setCatId(c.id)}
-                    className={`flex shrink-0 items-center gap-2 rounded-[10px] px-2 py-2 text-left text-sm ${c.id === catId ? "bg-subtle font-semibold text-ink" : "text-muted"} ${c.active ? "" : "line-through opacity-60"}`}
+                    className={`flex shrink-0 items-start gap-2 rounded-[10px] px-2 py-2 text-left text-sm md:shrink ${c.id === catId ? "bg-subtle font-semibold text-ink" : "text-muted"} ${c.active ? "" : "line-through opacity-60"}`}
                   >
-                    <span className="flex-1 whitespace-nowrap">{c.name}</span>
-                    <span className="text-xs text-muted">{n}</span>
+                    <span className="min-w-0 flex-1 whitespace-nowrap md:whitespace-normal md:break-words">{c.name}</span>
+                    <span className="shrink-0 pt-px text-xs text-muted">{n}</span>
                   </button>
                 );
               })}
@@ -126,12 +124,12 @@ export function CatalogueClient({ catalogue }: { catalogue: Catalogue }) {
           <section className="flex min-w-0 flex-1 flex-col gap-3">
             {category && (
               <div className="flex items-center gap-3">
-                <h2 className={`text-lg font-bold ${category.active ? "" : "text-muted line-through"}`}>{category.name}</h2>
-                <button type="button" onClick={() => setCatEdit(category)} className="rounded-lg border border-strong-line px-3 py-1.5 text-xs font-semibold">
+                <h2 className={`min-w-0 text-lg font-bold break-words ${category.active ? "" : "text-muted line-through"}`}>{category.name}</h2>
+                <button type="button" onClick={() => setCatEdit(category)} className="shrink-0 rounded-lg border border-strong-line px-3 py-1.5 text-xs font-semibold">
                   Edit
                 </button>
                 <div className="flex-1" />
-                <span className="text-[13px] text-muted">
+                <span className="shrink-0 text-[13px] text-muted">
                   {catServices.length} service{catServices.length === 1 ? "" : "s"}
                 </span>
               </div>
@@ -169,7 +167,6 @@ export function CatalogueClient({ catalogue }: { catalogue: Catalogue }) {
                         </span>
                       </span>
                     </button>
-                    <Switch on={s.active} label={`${s.name} active`} disabled={pending} onChange={(on) => toggle("service", s.id, on)} />
                     <button type="button" onClick={() => setPanel({ service: s, addVariant: false })} className="rounded-lg border border-strong-line px-3 py-1.5 text-xs font-semibold">
                       Edit
                     </button>
@@ -181,7 +178,6 @@ export function CatalogueClient({ catalogue }: { catalogue: Catalogue }) {
                           <span className={`min-w-0 flex-1 truncate pl-6 ${v.active ? "" : "text-muted line-through"}`}>{v.name}</span>
                           <span className="w-12 text-right text-[13px] text-muted">{v.duration_hours != null ? `${v.duration_hours}h` : ""}</span>
                           <span className="w-16 text-right font-semibold">{fmtMoneyShort(v.price)}</span>
-                          <Switch on={v.active} label={`${s.name} ${v.name} active`} disabled={pending} onChange={(on) => toggle("variant", v.id, on)} />
                         </div>
                       ))}
                       <button type="button" onClick={() => setPanel({ service: s, addVariant: true })} className="py-2.5 pl-6 text-[13px] font-semibold">
@@ -192,7 +188,7 @@ export function CatalogueClient({ catalogue }: { catalogue: Catalogue }) {
                 </div>
               );
             })}
-            <p className="text-[13px] text-muted">Turning an item off hides it from new bookings. Existing bookings keep the name and price they were booked at.</p>
+            <p className="text-[13px] text-muted">To switch an item off, open Edit. Switched-off items are crossed out and hidden from new bookings. Existing bookings keep the name and price they were booked at.</p>
           </section>
         </div>
       )}
@@ -482,14 +478,10 @@ function AddOnsTable({
   addOns,
   categories,
   onEdit,
-  onToggle,
-  busy,
 }: {
   addOns: AddOn[];
   categories: Catalogue["categories"];
   onEdit: (a: AddOn) => void;
-  onToggle: (id: string, on: boolean) => void;
-  busy: boolean;
 }) {
   const catName = (id: string | null) => (id ? categories.find((c) => c.id === id)?.name ?? "—" : "All categories");
   if (addOns.length === 0) return <p className="rounded-2xl border border-line bg-card px-4 py-8 text-center text-[13px] text-muted">No add-ons yet. Use “+ Add-on”.</p>;
@@ -515,7 +507,6 @@ function AddOnsTable({
               <td className={tdClass}>{fmtMoney(a.price)}</td>
               <td className={tdClass}>
                 <span className="flex items-center justify-end gap-3">
-                  <Switch on={a.active} label={`${a.name} active`} disabled={busy} onChange={(on) => onToggle(a.id, on)} />
                   <button type="button" onClick={() => onEdit(a)} className="rounded-lg border border-strong-line px-3 py-1.5 text-xs font-semibold">
                     Edit
                   </button>

@@ -21,16 +21,18 @@ export function ServicesClient({ catalogue }: { catalogue: CrewCatalogue }) {
   return (
     <div className="flex flex-col gap-4 md:flex-row md:items-start">
       {/* Categories: a scrolling row on mobile, a card on the right on desktop */}
-      <aside className="flex min-w-0 flex-col rounded-2xl border border-line bg-card p-2 md:order-last md:w-[240px] md:shrink-0 md:p-3">
-        <span className="px-2 pt-1 pb-2 text-[11px] font-semibold tracking-[0.66px] text-muted uppercase">Categories</span>
-        <div className="no-scrollbar flex gap-1 overflow-x-auto md:flex-col md:overflow-visible">
+      <aside className="flex min-w-0 flex-col md:order-last md:w-[240px] md:shrink-0 md:rounded-2xl md:border md:border-line md:bg-card md:p-3">
+        <span className="hidden px-2 pt-1 pb-2 text-[11px] font-semibold tracking-[0.66px] text-muted uppercase md:block">Categories</span>
+        <div className="no-scrollbar -mx-6 flex gap-2 overflow-x-auto px-6 md:mx-0 md:flex-col md:gap-1 md:overflow-visible md:px-0">
           {categories.map((c) => (
             <button
               key={c.id}
               type="button"
               aria-pressed={c.id === catId}
               onClick={() => setCatId(c.id)}
-              className={`shrink-0 rounded-[10px] px-2 py-2 text-left text-sm whitespace-nowrap md:shrink md:whitespace-normal ${c.id === catId ? "bg-subtle font-semibold text-ink" : "text-muted"}`}
+              className={`shrink-0 rounded-full border px-3.5 py-2 text-left text-[13px] font-semibold whitespace-nowrap md:shrink md:rounded-[10px] md:border-0 md:px-2 md:text-sm md:whitespace-normal ${
+                c.id === catId ? "border-ink bg-ink text-white md:bg-subtle md:text-ink" : "border-line bg-card text-muted md:bg-transparent md:font-normal"
+              }`}
             >
               {c.name}
             </button>
@@ -72,7 +74,7 @@ export function ServicesClient({ catalogue }: { catalogue: CrewCatalogue }) {
                 </svg>
                 <span className="flex min-w-0 flex-col">
                   <span className="text-[15px] font-semibold">{s.name}</span>
-                  <span className="text-xs text-muted">
+                  <span className="hidden text-xs text-muted md:block">
                     {vs.length} option{vs.length === 1 ? "" : "s"}
                     {from ? ` · from ${fmtMoneyShort(from)}` : ""}
                   </span>

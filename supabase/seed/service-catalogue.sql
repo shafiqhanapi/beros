@@ -94,14 +94,14 @@ select pg_temp.ensure_variant('Moving In BTO Flats', 'Post Renovation Cleaning',
 select pg_temp.ensure_variant('Moving In BTO Flats', 'Post Renovation Cleaning', 'Jumbo / EA',      840, 6,   5);
 select pg_temp.ensure_variant('Moving In BTO Flats', 'Post Renovation Cleaning', 'Maisonette',      920, 6,   6);
 
-select pg_temp.ensure_service('Moving In BTO Flats', 'Formaldehyde Removal', 1);
-select pg_temp.ensure_variant('Moving In BTO Flats', 'Formaldehyde Removal', '2-Room Flexi',    250, 1.5, 0);
-select pg_temp.ensure_variant('Moving In BTO Flats', 'Formaldehyde Removal', '2-Room Standard', 250, 1.5, 1);
-select pg_temp.ensure_variant('Moving In BTO Flats', 'Formaldehyde Removal', '3-Room',          295, 2,   2);
-select pg_temp.ensure_variant('Moving In BTO Flats', 'Formaldehyde Removal', '4-Room',          340, 2.5, 3);
-select pg_temp.ensure_variant('Moving In BTO Flats', 'Formaldehyde Removal', '5-Room',          380, 3,   4);
-select pg_temp.ensure_variant('Moving In BTO Flats', 'Formaldehyde Removal', 'Jumbo / EA',      430, 3.5, 5);
-select pg_temp.ensure_variant('Moving In BTO Flats', 'Formaldehyde Removal', 'Maisonette',      430, 3.5, 6);
+select pg_temp.ensure_service('Moving In BTO Flats', 'Formaldehyde Removal (New)', 1, array['Formaldehyde Removal']);
+select pg_temp.ensure_variant('Moving In BTO Flats', 'Formaldehyde Removal (New)', '2-Room Flexi',    250, 1.5, 0);
+select pg_temp.ensure_variant('Moving In BTO Flats', 'Formaldehyde Removal (New)', '2-Room Standard', 250, 1.5, 1);
+select pg_temp.ensure_variant('Moving In BTO Flats', 'Formaldehyde Removal (New)', '3-Room',          295, 2,   2);
+select pg_temp.ensure_variant('Moving In BTO Flats', 'Formaldehyde Removal (New)', '4-Room',          340, 2.5, 3);
+select pg_temp.ensure_variant('Moving In BTO Flats', 'Formaldehyde Removal (New)', '5-Room',          380, 3,   4);
+select pg_temp.ensure_variant('Moving In BTO Flats', 'Formaldehyde Removal (New)', 'Jumbo / EA',      430, 3.5, 5);
+select pg_temp.ensure_variant('Moving In BTO Flats', 'Formaldehyde Removal (New)', 'Maisonette',      430, 3.5, 6);
 
 select pg_temp.ensure_service('Moving In BTO Flats', 'Floor Tile Scrubbing', 2);
 select pg_temp.ensure_variant('Moving In BTO Flats', 'Floor Tile Scrubbing', '2-Room Flexi',    230, 2,   0);
@@ -122,7 +122,7 @@ select pg_temp.ensure_variant('Moving In BTO Flats', 'Window Cleaning', 'Bedroom
 select pg_temp.ensure_variant('Moving In BTO Flats', 'Window Cleaning', 'Flat Living Room', 240, 2.5, 1);
 
 select pg_temp.ensure_service('Moving In BTO Flats', 'Fan Cleaning', 5);
-select pg_temp.ensure_variant('Moving In BTO Flats', 'Fan Cleaning', 'Standard', 120, 1.5, 0);
+select pg_temp.ensure_variant('Moving In BTO Flats', 'Fan Cleaning', 'Standard (per pc)', 120, 1.5, 0, array['Standard']);
 
 -- 3. Fabric & Leather Care ----------------------------------------------------
 
@@ -133,9 +133,9 @@ select pg_temp.ensure_variant('Fabric & Leather Care', 'Sofa Cleaning', '4–5 S
 select pg_temp.ensure_variant('Fabric & Leather Care', 'Sofa Cleaning', '4–5 Seater – Big',    210, 2.5, 3);
 select pg_temp.ensure_variant('Fabric & Leather Care', 'Sofa Cleaning', '6–9 Seater – Small',  250, 3.5, 4);
 select pg_temp.ensure_variant('Fabric & Leather Care', 'Sofa Cleaning', '6–9 Seater – Big',    290, 3.5, 5);
-select pg_temp.ensure_variant('Fabric & Leather Care', 'Sofa Cleaning', 'L-Shape – Small',     200, 2.5, 6);
-select pg_temp.ensure_variant('Fabric & Leather Care', 'Sofa Cleaning', 'L-Shape – Big',       270, 3.5, 7);
-select pg_temp.ensure_variant('Fabric & Leather Care', 'Sofa Cleaning', 'U-Shape',             320, 3.5, 8);
+select pg_temp.ensure_variant('Fabric & Leather Care', 'Sofa Cleaning', '3–5 Seater L-Shape – Small', 200, 2.5, 6, array['L-Shape – Small']);
+select pg_temp.ensure_variant('Fabric & Leather Care', 'Sofa Cleaning', '3–5 Seater L-Shape – Big',   270, 3.5, 7, array['L-Shape – Big']);
+select pg_temp.ensure_variant('Fabric & Leather Care', 'Sofa Cleaning', '3–5 Seater U-Shape',         320, 3.5, 8, array['U-Shape']);
 select pg_temp.ensure_variant('Fabric & Leather Care', 'Sofa Cleaning', 'Ottoman / Footstool',  50, 0.5, 9);
 
 select pg_temp.ensure_service('Fabric & Leather Care', 'Carpet Cleaning', 1);
@@ -220,7 +220,7 @@ where v.service_id = s.id
   and s.name in ('Sofa Cleaning', 'Carpet Cleaning', 'Mattress Cleaning', 'Curtain Steam Cleaning')
   and v.name not in (
     '1–3 Seater – Small', '1–3 Seater – Big', '4–5 Seater – Small', '4–5 Seater – Big', '6–9 Seater – Small',
-    '6–9 Seater – Big', 'L-Shape – Small', 'L-Shape – Big', 'U-Shape', 'Ottoman / Footstool',
+    '6–9 Seater – Big', '3–5 Seater L-Shape – Small', '3–5 Seater L-Shape – Big', '3–5 Seater U-Shape', 'Ottoman / Footstool',
     'Up to 250cm', 'Up to 300cm', 'Up to 350cm', 'Kitchen Runner',
     'Baby Cot Mattress', 'Single / Super Single', 'Queen / King', 'Baby Cot',
     'Curtains (per pc)', 'Blinds (per pc)');

@@ -79,8 +79,8 @@ end $$;
 
 select pg_temp.ensure_category('Moving In BTO Flats', 0, array['Post-Renovation']);
 select pg_temp.ensure_category('Fabric & Leather Care', 1, array['Fabric & Upholstery']);
-select pg_temp.ensure_category('Car & Baby Gear', 2, array['Baby Gear']);
-select pg_temp.ensure_category('Equipment Rental', 3);
+select pg_temp.ensure_category('Car & Baby Gear (Pick Up & Delivery)', 2, array['Car & Baby Gear', 'Baby Gear']);
+select pg_temp.ensure_category('Equipment Rental (Per Day)', 3, array['Equipment Rental']);
 select pg_temp.ensure_category('Transportation Fees & Free Services', 4);
 
 -- 2. Moving In BTO Flats ------------------------------------------------------
@@ -156,28 +156,28 @@ select pg_temp.ensure_variant('Fabric & Leather Care', 'Curtain Steam Cleaning',
 
 -- 4. Car & Baby Gear (pick up & delivery) -------------------------------------
 
-select pg_temp.ensure_service('Car & Baby Gear', 'Car Mat Cleaning', 0);
-select pg_temp.ensure_variant('Car & Baby Gear', 'Car Mat Cleaning', '2–4 Seater', 120, 1,   0);
-select pg_temp.ensure_variant('Car & Baby Gear', 'Car Mat Cleaning', '5–7 Seater', 150, 1.5, 1);
+select pg_temp.ensure_service('Car & Baby Gear (Pick Up & Delivery)', 'Car Mat Cleaning', 0);
+select pg_temp.ensure_variant('Car & Baby Gear (Pick Up & Delivery)', 'Car Mat Cleaning', '2–4 Seater', 120, 1,   0);
+select pg_temp.ensure_variant('Car & Baby Gear (Pick Up & Delivery)', 'Car Mat Cleaning', '5–7 Seater', 150, 1.5, 1);
 
-select pg_temp.ensure_service('Car & Baby Gear', 'Baby Gear Cleaning', 1, array['Strollers/Cot Cleaning']);
-select pg_temp.ensure_variant('Car & Baby Gear', 'Baby Gear Cleaning', 'Car Baby Seat', 85, 1, 0);
-select pg_temp.ensure_variant('Car & Baby Gear', 'Baby Gear Cleaning', 'Stroller',      95, 1, 1);
+select pg_temp.ensure_service('Car & Baby Gear (Pick Up & Delivery)', 'Baby Gear Cleaning', 1, array['Strollers/Cot Cleaning']);
+select pg_temp.ensure_variant('Car & Baby Gear (Pick Up & Delivery)', 'Baby Gear Cleaning', 'Car Baby Seat', 85, 1, 0);
+select pg_temp.ensure_variant('Car & Baby Gear (Pick Up & Delivery)', 'Baby Gear Cleaning', 'Stroller',      95, 1, 1);
 
 -- 5. Equipment Rental (per day, includes delivery and pick-up) -----------------
 
-select pg_temp.ensure_service('Equipment Rental', 'Floor Scrubber', 0, array['Rental - Floor Scrubber']);
-select pg_temp.ensure_variant('Equipment Rental', 'Floor Scrubber', 'Per day', 300, null, 0, array['Base rate']);
-select pg_temp.ensure_service('Equipment Rental', 'Extraction Cleaner Puzzi 10/1', 1, array['Rental - Extraction Cleaner Puzzi 10/1']);
-select pg_temp.ensure_variant('Equipment Rental', 'Extraction Cleaner Puzzi 10/1', 'Per day', 110, null, 0, array['Base rate']);
-select pg_temp.ensure_service('Equipment Rental', 'Steam Cleaner SC2', 2, array['Rental - Steam Cleaner SC2']);
-select pg_temp.ensure_variant('Equipment Rental', 'Steam Cleaner SC2', 'Per day', 90, null, 0, array['Base rate']);
-select pg_temp.ensure_service('Equipment Rental', 'Pressure Washer K2', 3, array['Rental - Pressure Washer K2']);
-select pg_temp.ensure_variant('Equipment Rental', 'Pressure Washer K2', 'Per day', 65, null, 0, array['Base rate']);
-select pg_temp.ensure_service('Equipment Rental', 'Wet & Dry Vacuum WD 1', 4, array['Rental - Wet & Dry Vacuum WD 1']);
-select pg_temp.ensure_variant('Equipment Rental', 'Wet & Dry Vacuum WD 1', 'Per day', 60, null, 0, array['Base rate']);
-select pg_temp.ensure_service('Equipment Rental', 'Floor Dryer', 5);
-select pg_temp.ensure_variant('Equipment Rental', 'Floor Dryer', 'Per day', 60, null, 0);
+select pg_temp.ensure_service('Equipment Rental (Per Day)', 'Floor Scrubber', 0, array['Rental - Floor Scrubber']);
+select pg_temp.ensure_variant('Equipment Rental (Per Day)', 'Floor Scrubber', 'Per day', 300, null, 0, array['Base rate']);
+select pg_temp.ensure_service('Equipment Rental (Per Day)', 'Extraction Cleaner Puzzi 10/1', 1, array['Rental - Extraction Cleaner Puzzi 10/1']);
+select pg_temp.ensure_variant('Equipment Rental (Per Day)', 'Extraction Cleaner Puzzi 10/1', 'Per day', 110, null, 0, array['Base rate']);
+select pg_temp.ensure_service('Equipment Rental (Per Day)', 'Steam Cleaner SC2', 2, array['Rental - Steam Cleaner SC2']);
+select pg_temp.ensure_variant('Equipment Rental (Per Day)', 'Steam Cleaner SC2', 'Per day', 90, null, 0, array['Base rate']);
+select pg_temp.ensure_service('Equipment Rental (Per Day)', 'Pressure Washer K2', 3, array['Rental - Pressure Washer K2']);
+select pg_temp.ensure_variant('Equipment Rental (Per Day)', 'Pressure Washer K2', 'Per day', 65, null, 0, array['Base rate']);
+select pg_temp.ensure_service('Equipment Rental (Per Day)', 'Wet & Dry Vacuum WD 1', 4, array['Rental - Wet & Dry Vacuum WD 1']);
+select pg_temp.ensure_variant('Equipment Rental (Per Day)', 'Wet & Dry Vacuum WD 1', 'Per day', 60, null, 0, array['Base rate']);
+select pg_temp.ensure_service('Equipment Rental (Per Day)', 'Floor Dryer', 5);
+select pg_temp.ensure_variant('Equipment Rental (Per Day)', 'Floor Dryer', 'Per day', 60, null, 0);
 
 -- 6. Transportation Fees & Free Services --------------------------------------
 
@@ -227,7 +227,7 @@ where v.service_id = s.id
 
 -- Old categories that are now empty (Home → Moving In BTO Flats, Car → Car & Baby Gear).
 update public.service_categories c set active = false, sort_order = 99
-where c.name not in ('Moving In BTO Flats', 'Fabric & Leather Care', 'Car & Baby Gear', 'Equipment Rental', 'Transportation Fees & Free Services')
+where c.name not in ('Moving In BTO Flats', 'Fabric & Leather Care', 'Car & Baby Gear (Pick Up & Delivery)', 'Equipment Rental (Per Day)', 'Transportation Fees & Free Services')
   and not exists (select 1 from public.services s where s.category_id = c.id and s.active);
 
 commit;

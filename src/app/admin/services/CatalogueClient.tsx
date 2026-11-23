@@ -84,7 +84,6 @@ export function CatalogueClient({ catalogue }: { catalogue: Catalogue }) {
             </div>
             <div className="no-scrollbar flex gap-1 overflow-x-auto md:flex-col md:overflow-visible">
               {categories.map((c) => {
-                const n = services.filter((s) => s.category_id === c.id).length;
                 return (
                   <button
                     key={c.id}
@@ -93,7 +92,6 @@ export function CatalogueClient({ catalogue }: { catalogue: Catalogue }) {
                     className={`flex shrink-0 items-start gap-2 rounded-[10px] px-2 py-2 text-left text-sm md:shrink ${c.id === catId ? "bg-subtle font-semibold text-ink" : "text-muted"} ${c.active ? "" : "line-through opacity-60"}`}
                   >
                     <span className="min-w-0 flex-1 whitespace-nowrap md:whitespace-normal md:break-words">{c.name}</span>
-                    <span className="shrink-0 pt-px text-xs text-muted">{n}</span>
                   </button>
                 );
               })}
@@ -158,7 +156,7 @@ export function CatalogueClient({ catalogue }: { catalogue: Catalogue }) {
                       })}
                       className="flex min-w-0 flex-1 items-center gap-3 text-left"
                     >
-                      <span className="w-3 text-xs text-muted">{isOpen ? "˅" : "›"}</span>
+                      <Chevron open={isOpen} />
                       <span className="flex min-w-0 flex-col">
                         <span className={`truncate text-[15px] font-semibold ${s.active ? "" : "text-muted line-through"}`}>{s.name}</span>
                         <span className="text-xs text-muted">
@@ -173,14 +171,26 @@ export function CatalogueClient({ catalogue }: { catalogue: Catalogue }) {
                   </div>
                   {isOpen && (
                     <div className="border-t border-line bg-[#fafafa] px-4 py-1">
+                      <div className="flex items-center gap-3 pt-2 pb-1.5 text-[11px] font-semibold tracking-[0.66px] text-faint uppercase">
+                        <span className="min-w-0 flex-1 pl-7">Option</span>
+                        <span className="hidden w-24 text-right sm:block">Crew × hrs</span>
+                        <span className="w-14 text-right">Margin</span>
+                        <span className="w-16 text-right">Price</span>
+                      </div>
                       {vs.map((v) => (
-                        <div key={v.id} className="flex items-center gap-3 border-line py-2.5 text-sm [&+&]:border-t">
-                          <span className={`min-w-0 flex-1 truncate pl-6 ${v.active ? "" : "text-muted line-through"}`}>{v.name}</span>
-                          <span className="w-12 text-right text-[13px] text-muted">{v.duration_hours != null ? `${v.duration_hours}h` : ""}</span>
-                          <span className="w-16 text-right font-semibold">{fmtMoneyShort(v.price)}</span>
+                        <div key={v.id} className="flex items-center gap-3 border-t border-line py-2.5 text-sm">
+                          <span className="flex min-w-0 flex-1 flex-col pl-7">
+                            <span className={`break-words ${v.active ? "" : "text-muted line-through"}`}>{v.name}</span>
+                            {crewHours(v) !== "—" && <span className="text-xs text-muted sm:hidden">{crewHours(v)}</span>}
+                          </span>
+                          <span className="hidden w-24 text-right text-[13px] text-muted sm:block">{crewHours(v)}</span>
+                          <span className="flex w-14 justify-end">
+                            <MarginBadge price={v.price} cost={v.cost} />
+                          </span>
+                          <span className="w-16 text-right font-semibold">{v.price === 0 ? "Free" : fmtMoneyShort(v.price)}</span>
                         </div>
                       ))}
-                      <button type="button" onClick={() => setPanel({ service: s, addVariant: true })} className="py-2.5 pl-6 text-[13px] font-semibold">
+                      <button type="button" onClick={() => setPanel({ service: s, addVariant: true })} className="block w-full border-t border-line py-2.5 pl-7 text-left text-[13px] font-semibold">
                         + Add variant
                       </button>
                     </div>
@@ -188,6 +198,10 @@ export function CatalogueClient({ catalogue }: { catalogue: Catalogue }) {
                 </div>
               );
             })}
+            <p className="text-[13px] text-muted">
+              Margin = (price − cost per job) ÷ price. Cost covers labour, transport and materials; marketing and payment fees are excluded.{" "}
+              <span className="font-semibold whitespace-nowrap text-ok">40%+</span> · <span className="font-semibold whitespace-nowrap text-wait">20–40%</span> · <span className="font-semibold whitespace-nowrap text-bad">under 20%</span>. Only admins can see costs and margins.
+            </p>
             <p className="text-[13px] text-muted">To switch an item off, open Edit. Switched-off items are crossed out and hidden from new bookings. Existing bookings keep the name and price they were booked at.</p>
           </section>
         </div>
@@ -239,6 +253,34 @@ export function CatalogueClient({ catalogue }: { catalogue: Catalogue }) {
 }
 
 // ---------------------------------------------------------------------------
+
+function Chevron({ open }: { open: boolean }) {
+  return (
+    <svg viewBox="0 0 16 16" aria-hidden className={`size-4 shrink-0 text-muted transition-transform duration-150 ${open ? "rotate-90" : ""}`}>
+      <path d="M6 3.5 10.5 8 6 12.5" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
+/** "2 × 2.5h", "2 crew", "2.5h" or "—". */
+function crewHours(v: Variant) {
+  if (v.crew_count && v.duration_hours != null) return `${v.crew_count} × ${v.duration_hours}h`;
+  if (v.crew_count) return `${v.crew_count} crew`;
+  if (v.duration_hours != null) return `${v.duration_hours}h`;
+  return "—";
+}
+
+function marginPct(price: number, cost: number | null) {
+  if (cost == null || price <= 0) return null;
+  return Math.round(((price - cost) / price) * 100);
+}
+
+function MarginBadge({ price, cost }: { price: number; cost: number | null }) {
+  const m = marginPct(price, cost);
+  if (m == null) return <span className="text-[13px] text-faint">—</span>;
+  const tone = m >= 40 ? "bg-ok/10 text-ok" : m >= 20 ? "bg-wait/10 text-wait" : "bg-bad/10 text-bad";
+  return <span className={`rounded-md px-1.5 py-0.5 text-xs font-semibold tabular-nums ${tone}`}>{m}%</span>;
+}
 
 function CategoryEditor({
   category,
@@ -321,7 +363,7 @@ function CategoryEditor({
 
 // ---------------------------------------------------------------------------
 
-type VariantDraft = { id?: string; name: string; price: string; duration: string; active: boolean };
+type VariantDraft = { id?: string; name: string; price: string; duration: string; crew: string; cost: string; active: boolean };
 
 function ServiceEditor({
   service,
@@ -340,13 +382,17 @@ function ServiceEditor({
   onClose: () => void;
   onSaved: (categoryId: string) => void;
 }) {
-  const blank = (): VariantDraft => ({ name: "", price: "", duration: "", active: true });
+  const blank = (): VariantDraft => ({ name: "", price: "", duration: "", crew: "", cost: "", active: true });
   const [name, setName] = useState(service?.name ?? "");
   const [cat, setCat] = useState(categoryId);
   const [description, setDescription] = useState(service?.description ?? "");
   const [active, setActive] = useState(service?.active ?? true);
   const [rows, setRows] = useState<VariantDraft[]>(() => [
-    ...variants.map((v) => ({ id: v.id, name: v.name, price: v.price.toFixed(2), duration: v.duration_hours != null ? String(v.duration_hours) : "", active: v.active })),
+    ...variants.map((v) => ({ id: v.id, name: v.name, price: v.price.toFixed(2), duration: v.duration_hours != null ? String(v.duration_hours) : "",
+      crew: v.crew_count != null ? String(v.crew_count) : "",
+      cost: v.cost != null ? v.cost.toFixed(2) : "",
+      active: v.active,
+    })),
     ...(addVariant || variants.length === 0 ? [blank()] : []),
   ]);
   const [error, setError] = useState<string | null>(null);
@@ -389,7 +435,11 @@ function ServiceEditor({
         name,
         description,
         active,
-        variants: filled.map((r) => ({ id: r.id, name: r.name, price: Number(r.price), duration: r.duration === "" ? null : Number(r.duration), active: r.active })),
+        variants: filled.map((r) => ({ id: r.id, name: r.name, price: Number(r.price), duration: r.duration === "" ? null : Number(r.duration),
+          crew: r.crew === "" ? null : Number(r.crew),
+          cost: r.cost === "" ? null : Number(r.cost),
+          active: r.active,
+        })),
       });
       if (res.error) setError(res.error);
       else onSaved(cat);
@@ -439,28 +489,39 @@ function ServiceEditor({
 
       <div className="flex flex-col gap-2">
         <span className={label}>Variants</span>
-        <div className="grid grid-cols-[1fr_80px_56px_40px_20px] gap-2 text-[11px] font-semibold tracking-[0.66px] text-muted uppercase">
-          <span>Name</span>
-          <span>Price</span>
-          <span>Hours</span>
-          <span>On</span>
-          <span />
-        </div>
-        {rows.map((r, i) => (
-          <div key={r.id ?? `new-${i}`} className="grid grid-cols-[1fr_80px_56px_40px_20px] items-center gap-2">
-            <input value={r.name} onChange={(e) => set(i, { name: e.target.value })} placeholder="e.g. 3-seater" aria-label="Variant name" className={input} />
-            <input inputMode="decimal" value={r.price} onChange={(e) => set(i, { price: e.target.value.replace(/[^\d.]/g, "") })} placeholder="$" aria-label="Price" className={input} />
-            <input inputMode="decimal" value={r.duration} onChange={(e) => set(i, { duration: e.target.value.replace(/[^\d.]/g, "") })} placeholder="h" aria-label="Estimated hours" className={input} />
-            <Switch on={r.active} onChange={(on) => set(i, { active: on })} label={`${r.name || "Variant"} active`} />
-            <button type="button" aria-label={`Delete ${r.name || "variant"}`} disabled={pending} onClick={() => removeVariant(i)} className="text-sm text-muted hover:text-bad">
-              ✕
-            </button>
-          </div>
-        ))}
+        {rows.map((r, i) => {
+          const m = marginPct(Number(r.price) || 0, r.cost === "" ? null : Number(r.cost));
+          return (
+            <div key={r.id ?? `new-${i}`} className="flex flex-col gap-2 rounded-xl border border-line p-3">
+              <div className="flex items-center gap-2">
+                <input value={r.name} onChange={(e) => set(i, { name: e.target.value })} placeholder="Option name, e.g. 3-seater" aria-label="Variant name" className={input} />
+                <Switch on={r.active} onChange={(on) => set(i, { active: on })} label={`${r.name || "Variant"} active`} />
+                <button type="button" aria-label={`Delete ${r.name || "variant"}`} disabled={pending} onClick={() => removeVariant(i)} className="px-1 text-sm text-muted hover:text-bad">
+                  ✕
+                </button>
+              </div>
+              <div className="grid grid-cols-4 gap-2">
+                <MiniField label="Price $">
+                  <input inputMode="decimal" value={r.price} onChange={(e) => set(i, { price: e.target.value.replace(/[^\d.]/g, "") })} aria-label="Price" className={input} />
+                </MiniField>
+                <MiniField label="Hours">
+                  <input inputMode="decimal" value={r.duration} onChange={(e) => set(i, { duration: e.target.value.replace(/[^\d.]/g, "") })} aria-label="Hours on site" className={input} />
+                </MiniField>
+                <MiniField label="Crew">
+                  <input inputMode="numeric" value={r.crew} onChange={(e) => set(i, { crew: e.target.value.replace(/\D/g, "") })} aria-label="Crew on the job" className={input} />
+                </MiniField>
+                <MiniField label="Cost $">
+                  <input inputMode="decimal" value={r.cost} onChange={(e) => set(i, { cost: e.target.value.replace(/[^\d.]/g, "") })} aria-label="Cost per job" className={input} />
+                </MiniField>
+              </div>
+              {m != null && <span className="text-xs text-muted">Margin {m}% · profit {fmtMoney((Number(r.price) || 0) - Number(r.cost))} per job</span>}
+            </div>
+          );
+        })}
         <button type="button" onClick={() => setRows((rs) => [...rs, blank()])} className="self-start text-[13px] font-semibold">
           + Add variant
         </button>
-        <p className="text-xs text-muted">Variants already used in bookings can be switched off but not deleted.</p>
+        <p className="text-xs text-muted">Cost per job = labour + transport + materials. Crew and cost are only visible to admins. Variants already used in bookings can be switched off but not deleted.</p>
       </div>
       <ErrorNote>{error}</ErrorNote>
       {service && (
@@ -469,6 +530,15 @@ function ServiceEditor({
         </button>
       )}
     </SidePanel>
+  );
+}
+
+function MiniField({ label: text, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <label className="flex min-w-0 flex-col gap-1">
+      <span className="text-[11px] font-semibold tracking-[0.4px] text-muted uppercase">{text}</span>
+      {children}
+    </label>
   );
 }
 

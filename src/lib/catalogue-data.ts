@@ -29,6 +29,9 @@ export interface Variant {
   duration_hours: number | null;
   active: boolean;
   sort_order: number;
+  /** Admin-only (service_variant_costs): crew on the job and total cost per job. */
+  crew_count: number | null;
+  cost: number | null;
 }
 export interface AddOn {
   id: string;
@@ -77,19 +80,31 @@ const byOrder = <T extends { sort_order: number; name: string }>(a: T, b: T) => 
 
 export const getCatalogue = cache(async (): Promise<Catalogue> => {
   const supabase = await db();
-  const [c, s, v, a] = await Promise.all([
+  const [c, s, v, a, k] = await Promise.all([
     supabase.from("service_categories").select("*"),
     supabase.from("services").select("*"),
     supabase.from("service_variants").select("*"),
     supabase.from("add_ons").select("*"),
+    supabase.from("service_variant_costs").select("variant_id, crew_count, cost"),
   ]);
+  // Costs are optional: before supabase/seed/service-costs.sql has run the table doesn't exist.
+  const costs = new Map((k.error ? [] : (k.data as { variant_id: string; crew_count: number | null; cost: string | number | null }[])).map((x) => [x.variant_id, x]));
   const err = c.error ?? s.error ?? v.error ?? a.error;
   if (err) throw new Error(err.message);
   return {
     categories: (c.data as Category[]).sort(byOrder),
     services: (s.data as Service[]).sort(byOrder),
     variants: (v.data as Variant[])
-      .map((x) => ({ ...x, price: num(x.price), duration_hours: x.duration_hours == null ? null : num(x.duration_hours) }))
+      .map((x) => {
+        const k = costs.get(x.id);
+        return {
+          ...x,
+          price: num(x.price),
+          duration_hours: x.duration_hours == null ? null : num(x.duration_hours),
+          crew_count: k?.crew_count ?? null,
+          cost: k?.cost == null ? null : num(k.cost),
+        };
+      })
       .sort((x, y) => x.sort_order - y.sort_order || x.price - y.price),
     addOns: (a.data as AddOn[]).map((x) => ({ ...x, price: num(x.price) })).sort(byOrder),
   };

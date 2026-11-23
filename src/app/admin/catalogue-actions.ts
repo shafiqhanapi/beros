@@ -191,7 +191,7 @@ export interface ServiceInput {
   name: string;
   description: string;
   active: boolean;
-  variants: { id?: string; name: string; price: number; duration: number | null; active: boolean }[];
+  variants: { id?: string; name: string; price: number; duration: number | null; crew: number | null; cost: number | null; active: boolean }[];
 }
 
 /** Create or update a service together with its variants. */
@@ -202,6 +202,9 @@ export async function saveService(input: ServiceInput): Promise<ActionResult> {
   if (!variants.length) return fail("Add at least one variant with a price.");
   if (variants.some((v) => !(Number(v.price) >= 0) || Number.isNaN(Number(v.price)))) return fail("Every variant needs a price.");
   if (new Set(variants.map((v) => v.name.trim().toLowerCase())).size !== variants.length) return fail("Variant names must be different.");
+  const optNum = (x: number | null) => (x == null || Number.isNaN(Number(x)) ? null : Number(x));
+  if (variants.some((v) => { const c = optNum(v.crew); return c != null && (!Number.isInteger(c) || c < 1 || c > 50); })) return fail("Crew must be a whole number, 1 or more.");
+  if (variants.some((v) => { const c = optNum(v.cost); return c != null && c < 0; })) return fail("Cost can't be negative.");
 
   const supabase = await db();
   const row = { category_id: input.categoryId, name: input.name.trim(), description: input.description.trim() || null, active: input.active };
@@ -224,8 +227,19 @@ export async function saveService(input: ServiceInput): Promise<ActionResult> {
       active: v.active,
       sort_order: i,
     };
-    const { error } = v.id ? await supabase.from("service_variants").update(vrow).eq("id", v.id) : await supabase.from("service_variants").insert(vrow);
-    if (error) return fail(friendly(error.message));
+    const { data, error } = v.id
+      ? await supabase.from("service_variants").update(vrow).eq("id", v.id).select("id").single()
+      : await supabase.from("service_variants").insert(vrow).select("id").single();
+    if (error || !data) return fail(friendly(error?.message ?? "Couldn't save the variant."));
+    const crew = optNum(v.crew);
+    const cost = optNum(v.cost);
+    const { error: costError } = await supabase.from("service_variant_costs").upsert({
+      variant_id: data.id as string,
+      crew_count: crew,
+      cost: cost == null ? null : Math.round(cost * 100) / 100,
+      updated_at: new Date().toISOString(),
+    });
+    if (costError) return fail(/service_variant_costs/.test(costError.message) ? "Prices saved. To save crew and cost, run supabase/seed/service-costs.sql in Supabase first." : friendly(costError.message));
   }
   revalidatePath("/admin/services");
   return { ok: "Saved" };

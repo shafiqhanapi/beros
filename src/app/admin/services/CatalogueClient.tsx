@@ -198,11 +198,6 @@ export function CatalogueClient({ catalogue }: { catalogue: Catalogue }) {
                 </div>
               );
             })}
-            <p className="text-[13px] text-muted">
-              Margin = (price − cost per job) ÷ price. Cost covers labour, transport and materials; marketing and payment fees are excluded.{" "}
-              <span className="font-semibold whitespace-nowrap text-ok">40%+</span> · <span className="font-semibold whitespace-nowrap text-wait">20–40%</span> · <span className="font-semibold whitespace-nowrap text-bad">under 20%</span>. Only admins can see costs and margins.
-            </p>
-            <p className="text-[13px] text-muted">To switch an item off, open Edit. Switched-off items are crossed out and hidden from new bookings. Existing bookings keep the name and price they were booked at.</p>
           </section>
         </div>
       )}

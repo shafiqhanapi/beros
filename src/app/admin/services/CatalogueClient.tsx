@@ -48,7 +48,6 @@ export function CatalogueClient({ catalogue }: { catalogue: Catalogue }) {
     <>
       <div className="flex items-center gap-3">
         <div className="flex min-w-0 flex-1 flex-col gap-1">
-          <p className="hidden text-[13px] font-medium text-muted md:block">Categories, services and variant prices</p>
           <h1 className="text-[22px] font-bold tracking-[-0.52px] md:text-[26px]">{view === "addons" ? "Add-ons" : "Service catalogue"}</h1>
         </div>
         <button
@@ -170,27 +169,28 @@ export function CatalogueClient({ catalogue }: { catalogue: Catalogue }) {
                     </button>
                   </div>
                   {isOpen && (
-                    <div className="border-t border-line bg-[#fafafa] px-4 py-1">
-                      <div className="flex items-center gap-3 pt-2 pb-1.5 text-[11px] font-semibold tracking-[0.66px] text-faint uppercase">
-                        <span className="min-w-0 flex-1 pl-7">Option</span>
-                        <span className="hidden w-24 text-right sm:block">Crew × hrs</span>
-                        <span className="w-14 text-right">Margin</span>
-                        <span className="w-16 text-right">Price</span>
+                    <div className="border-t border-line bg-[#fafafa] px-3 py-1 sm:px-4">
+                      <div className="flex items-center gap-2 pt-2 pb-1.5 text-[11px] sm:gap-3 font-semibold tracking-[0.66px] text-faint uppercase">
+                        <span className="min-w-0 flex-1 sm:pl-7">Option</span>
+                        <span className="w-8 text-right sm:w-10">Crew</span>
+                        <span className="w-10 text-right sm:w-12">Hrs</span>
+                        <span className="w-12 text-right sm:w-14">Margin</span>
+                        <span className="w-12 text-right sm:w-16">Price</span>
                       </div>
                       {vs.map((v) => (
-                        <div key={v.id} className="flex items-center gap-3 border-t border-line py-2.5 text-sm">
-                          <span className="flex min-w-0 flex-1 flex-col pl-7">
-                            <span className={`break-words ${v.active ? "" : "text-muted line-through"}`}>{v.name}</span>
-                            {crewHours(v) !== "—" && <span className="text-xs text-muted sm:hidden">{crewHours(v)}</span>}
+                        <div key={v.id} className="flex items-center gap-2 border-t border-line py-2.5 text-sm sm:gap-3">
+                          <span className="flex min-w-0 flex-1 flex-col sm:pl-7">
+                            <span className={`${v.active ? "" : "text-muted line-through"}`}>{v.name}</span>
                           </span>
-                          <span className="hidden w-24 text-right text-[13px] text-muted sm:block">{crewHours(v)}</span>
-                          <span className="flex w-14 justify-end">
+                          <span className="w-8 text-right text-[13px] text-muted tabular-nums sm:w-10">{v.crew_count ?? "—"}</span>
+                          <span className="w-10 text-right text-[13px] text-muted tabular-nums sm:w-12">{v.duration_hours != null ? `${v.duration_hours}h` : "—"}</span>
+                          <span className="flex w-12 justify-end sm:w-14">
                             <MarginBadge price={v.price} cost={v.cost} />
                           </span>
-                          <span className="w-16 text-right font-semibold">{v.price === 0 ? "Free" : fmtMoneyShort(v.price)}</span>
+                          <span className="w-12 text-right font-semibold sm:w-16">{v.price === 0 ? "Free" : fmtMoneyShort(v.price)}</span>
                         </div>
                       ))}
-                      <button type="button" onClick={() => setPanel({ service: s, addVariant: true })} className="block w-full border-t border-line py-2.5 pl-7 text-left text-[13px] font-semibold">
+                      <button type="button" onClick={() => setPanel({ service: s, addVariant: true })} className="block w-full border-t border-line py-2.5 text-left sm:pl-7 text-[13px] font-semibold">
                         + Add variant
                       </button>
                     </div>
@@ -260,14 +260,6 @@ function Chevron({ open }: { open: boolean }) {
       <path d="M6 3.5 10.5 8 6 12.5" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
   );
-}
-
-/** "2 × 2.5h", "2 crew", "2.5h" or "—". */
-function crewHours(v: Variant) {
-  if (v.crew_count && v.duration_hours != null) return `${v.crew_count} × ${v.duration_hours}h`;
-  if (v.crew_count) return `${v.crew_count} crew`;
-  if (v.duration_hours != null) return `${v.duration_hours}h`;
-  return "—";
 }
 
 function marginPct(price: number, cost: number | null) {

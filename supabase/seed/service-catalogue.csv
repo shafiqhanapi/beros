@@ -1,47 +1,64 @@
-﻿Service,Option,Price (SGD),Duration,Fabric Protector Spray (+SGD 25),Disinfect & Sanitize (+SGD 25),Category,Status,Notes
-Post Renovation Cleaning,2-Room Flexi,370,2–3 hrs,FALSE,FALSE,Post-Renovation,Active,
-Post Renovation Cleaning,2-Room Standard,390,2–3 hrs,FALSE,FALSE,Post-Renovation,Active,
-Post Renovation Cleaning,3-Room,460,4–5 hrs,FALSE,FALSE,Post-Renovation,Active,
-Post Renovation Cleaning,4-Room,560,4–5 hrs,FALSE,FALSE,Post-Renovation,Active,
-Post Renovation Cleaning,5-Room,650,5–6 hrs,FALSE,FALSE,Post-Renovation,Active,
-Post Renovation Cleaning,Jumbo / EA,760,6–7 hrs,FALSE,FALSE,Post-Renovation,Active,
-Post Renovation Cleaning,Maisonette,850,6–7 hrs,FALSE,FALSE,Post-Renovation,Active,
-Formaldehyde Removal,2-Room Flexi,360,,FALSE,FALSE,Post-Renovation,Active,Estimated from SGD 360–640 range
-Formaldehyde Removal,2-Room Standard,370,,FALSE,FALSE,Post-Renovation,Active,Estimated from SGD 360–640 range
-Formaldehyde Removal,3-Room,410,,FALSE,FALSE,Post-Renovation,Active,Estimated from SGD 360–640 range
-Formaldehyde Removal,4-Room,470,,FALSE,FALSE,Post-Renovation,Active,Estimated from SGD 360–640 range
-Formaldehyde Removal,5-Room,520,,FALSE,FALSE,Post-Renovation,Active,Estimated from SGD 360–640 range
-Formaldehyde Removal,Jumbo / EA,590,,FALSE,FALSE,Post-Renovation,Active,Estimated from SGD 360–640 range
-Formaldehyde Removal,Maisonette,640,,FALSE,FALSE,Post-Renovation,Active,Estimated from SGD 360–640 range
-Floor Tile Scrubbing,2-Room Flexi,360,,FALSE,FALSE,Post-Renovation,Active,Estimated from SGD 360–640 range
-Floor Tile Scrubbing,2-Room Standard,370,,FALSE,FALSE,Post-Renovation,Active,Estimated from SGD 360–640 range
-Floor Tile Scrubbing,3-Room,410,,FALSE,FALSE,Post-Renovation,Active,Estimated from SGD 360–640 range
-Floor Tile Scrubbing,4-Room,470,,FALSE,FALSE,Post-Renovation,Active,Estimated from SGD 360–640 range
-Floor Tile Scrubbing,5-Room,520,,FALSE,FALSE,Post-Renovation,Active,Estimated from SGD 360–640 range
-Floor Tile Scrubbing,Jumbo / EA,590,,FALSE,FALSE,Post-Renovation,Active,Estimated from SGD 360–640 range
-Floor Tile Scrubbing,Maisonette,640,,FALSE,FALSE,Post-Renovation,Active,Estimated from SGD 360–640 range
-Paint Stain Removal,2 hrs,160,2 hrs,FALSE,FALSE,Post-Renovation,Active,SGD 80 per hour
-Paint Stain Removal,4 hrs,320,4 hrs,FALSE,FALSE,Post-Renovation,Active,SGD 80 per hour
-Paint Stain Removal,6 hrs (max),480,6 hrs,FALSE,FALSE,Post-Renovation,Active,"SGD 80 per hour; 6 hrs is the maximum"
-Window Cleaning,Bedrooms,180,2–3 hrs,FALSE,FALSE,Home,Active,
-Window Cleaning,Flat Living Room,240,2–3 hrs,FALSE,FALSE,Home,Active,
-Fan Cleaning,Standard,120,1–2 hrs,FALSE,FALSE,Home,Active,
-Carpet Cleaning,Up to 250cm - Standard,120,1–3 hrs,TRUE,TRUE,Fabric & Upholstery,Active,
-Carpet Cleaning,Up to 300cm - Large,150,1–3 hrs,TRUE,TRUE,Fabric & Upholstery,Active,
-Carpet Cleaning,Up to 350cm - Extra Large,180,1–3 hrs,TRUE,TRUE,Fabric & Upholstery,Active,
-Carpet Cleaning,Kitchen Runner,110,1–2 hrs,TRUE,TRUE,Fabric & Upholstery,Active,
-Mattress Cleaning,Baby Cot Mattress,110,1 hr 30 min,TRUE,TRUE,Fabric & Upholstery,Active,
-Mattress Cleaning,Single / Super Single,120,1 hr 30 min,TRUE,TRUE,Fabric & Upholstery,Active,
-Mattress Cleaning,Queen / King,150,1 hr 30 min,TRUE,TRUE,Fabric & Upholstery,Active,
-Curtain Cleaning,Curtains – Steam Clean (per pc),150,1 hr 30 min,FALSE,FALSE,Fabric & Upholstery,Active,Priced per piece
-Curtain Cleaning,Blinds (per pc),180,1 hr 30 min,FALSE,FALSE,Fabric & Upholstery,Active,Priced per piece
-Strollers/Cot Cleaning,Car Baby Seat,85,1 hr 30 min,FALSE,FALSE,Baby Gear,Active,
-Strollers/Cot Cleaning,Stroller,95,1 hr 30 min,FALSE,FALSE,Baby Gear,Active,
-Strollers/Cot Cleaning,Baby Cot,120,1 hr 30 min,FALSE,FALSE,Baby Gear,Active,
-Car Fumigation & Interior Deep Cleaning,Fumigation Only,85,1 hr 30 min,FALSE,FALSE,Car,Active,Interior Deep Cleaning option removed — service name may need updating
-Car Fumigation & Interior Deep Cleaning,Car Mat Cleaning,,,FALSE,FALSE,Car,Draft,New — price and duration to confirm
-Rental - Floor Scrubber,Per day,300,Per day,FALSE,FALSE,Equipment Rental,Active,SGD 300 per day
-Rental - Extraction Cleaner Puzzi 10/1,Base rate,110,,FALSE,FALSE,Equipment Rental,Active,"Listed as ""From SGD 110"". Tagline: Heavy-Duty Cleaning, Made Simple."
-Rental - Steam Cleaner SC2,Base rate,90,,FALSE,FALSE,Equipment Rental,Active,"Listed as ""From SGD 90"""
-Rental - Pressure Washer K2,Base rate,65,,FALSE,FALSE,Equipment Rental,Active,"Listed as ""From SGD 65"""
-Rental - Wet & Dry Vacuum WD 1,Base rate,60,,FALSE,FALSE,Equipment Rental,Active,"Listed as ""From SGD 60"""
+Category,Service,Option,Price (SGD),Hours on site,Add-ons (+SGD 25 each)
+Moving In BTO Flats,Post Renovation Cleaning,2-Room Flexi,370,2.5,
+Moving In BTO Flats,Post Renovation Cleaning,2-Room Standard,390,2.5,
+Moving In BTO Flats,Post Renovation Cleaning,3-Room,460,3,
+Moving In BTO Flats,Post Renovation Cleaning,4-Room,560,5,
+Moving In BTO Flats,Post Renovation Cleaning,5-Room,650,5,
+Moving In BTO Flats,Post Renovation Cleaning,Jumbo / EA,840,6,
+Moving In BTO Flats,Post Renovation Cleaning,Maisonette,920,6,
+Moving In BTO Flats,Formaldehyde Removal,2-Room Flexi,250,1.5,
+Moving In BTO Flats,Formaldehyde Removal,2-Room Standard,250,1.5,
+Moving In BTO Flats,Formaldehyde Removal,3-Room,295,2,
+Moving In BTO Flats,Formaldehyde Removal,4-Room,340,2.5,
+Moving In BTO Flats,Formaldehyde Removal,5-Room,380,3,
+Moving In BTO Flats,Formaldehyde Removal,Jumbo / EA,430,3.5,
+Moving In BTO Flats,Formaldehyde Removal,Maisonette,430,3.5,
+Moving In BTO Flats,Floor Tile Scrubbing,2-Room Flexi,230,2,
+Moving In BTO Flats,Floor Tile Scrubbing,2-Room Standard,230,2,
+Moving In BTO Flats,Floor Tile Scrubbing,3-Room,330,3,
+Moving In BTO Flats,Floor Tile Scrubbing,4-Room,380,3.5,
+Moving In BTO Flats,Floor Tile Scrubbing,5-Room,430,4,
+Moving In BTO Flats,Floor Tile Scrubbing,Jumbo / EA,480,4.5,
+Moving In BTO Flats,Floor Tile Scrubbing,Maisonette,530,5,
+Moving In BTO Flats,Paint Stain Removal,2 hrs,160,2,
+Moving In BTO Flats,Paint Stain Removal,4 hrs,320,4,
+Moving In BTO Flats,Paint Stain Removal,6 hrs (max),480,6,
+Moving In BTO Flats,Window Cleaning,Bedrooms,180,2.5,
+Moving In BTO Flats,Window Cleaning,Flat Living Room,240,2.5,
+Moving In BTO Flats,Fan Cleaning,Standard,120,1.5,
+Fabric & Leather Care,Sofa Cleaning,1–3 Seater – Small,120,1.5,Fabric Protection Spray; Disinfect & Sanitize
+Fabric & Leather Care,Sofa Cleaning,1–3 Seater – Big,150,1.5,Fabric Protection Spray; Disinfect & Sanitize
+Fabric & Leather Care,Sofa Cleaning,4–5 Seater – Small,180,2.5,Fabric Protection Spray; Disinfect & Sanitize
+Fabric & Leather Care,Sofa Cleaning,4–5 Seater – Big,210,2.5,Fabric Protection Spray; Disinfect & Sanitize
+Fabric & Leather Care,Sofa Cleaning,6–9 Seater – Small,250,3.5,Fabric Protection Spray; Disinfect & Sanitize
+Fabric & Leather Care,Sofa Cleaning,6–9 Seater – Big,290,3.5,Fabric Protection Spray; Disinfect & Sanitize
+Fabric & Leather Care,Sofa Cleaning,L-Shape – Small,200,2.5,Fabric Protection Spray; Disinfect & Sanitize
+Fabric & Leather Care,Sofa Cleaning,L-Shape – Big,270,3.5,Fabric Protection Spray; Disinfect & Sanitize
+Fabric & Leather Care,Sofa Cleaning,U-Shape,320,3.5,Fabric Protection Spray; Disinfect & Sanitize
+Fabric & Leather Care,Sofa Cleaning,Ottoman / Footstool,50,0.5,Fabric Protection Spray; Disinfect & Sanitize
+Fabric & Leather Care,Carpet Cleaning,Up to 250cm,120,1.5,Fabric Protection Spray; Disinfect & Sanitize
+Fabric & Leather Care,Carpet Cleaning,Up to 300cm,150,2,Fabric Protection Spray; Disinfect & Sanitize
+Fabric & Leather Care,Carpet Cleaning,Up to 350cm,180,2,Fabric Protection Spray; Disinfect & Sanitize
+Fabric & Leather Care,Carpet Cleaning,Kitchen Runner,110,1.5,Fabric Protection Spray; Disinfect & Sanitize
+Fabric & Leather Care,Mattress Cleaning,Baby Cot Mattress,110,1.5,Fabric Protection Spray; Disinfect & Sanitize
+Fabric & Leather Care,Mattress Cleaning,Single / Super Single,120,1.5,Fabric Protection Spray; Disinfect & Sanitize
+Fabric & Leather Care,Mattress Cleaning,Queen / King,150,1.5,Fabric Protection Spray; Disinfect & Sanitize
+Fabric & Leather Care,Mattress Cleaning,Baby Cot,120,1,Fabric Protection Spray; Disinfect & Sanitize
+Fabric & Leather Care,Curtain Steam Cleaning,Curtains (per pc),150,0.5,Fabric Protection Spray; Disinfect & Sanitize
+Fabric & Leather Care,Curtain Steam Cleaning,Blinds (per pc),180,0.5,Fabric Protection Spray; Disinfect & Sanitize
+Car & Baby Gear,Car Mat Cleaning,2–4 Seater,120,1,
+Car & Baby Gear,Car Mat Cleaning,5–7 Seater,150,1.5,
+Car & Baby Gear,Baby Gear Cleaning,Car Baby Seat,85,1,
+Car & Baby Gear,Baby Gear Cleaning,Stroller,95,1,
+Equipment Rental,Floor Scrubber,Per day,300,,
+Equipment Rental,Extraction Cleaner Puzzi 10/1,Per day,110,,
+Equipment Rental,Steam Cleaner SC2,Per day,90,,
+Equipment Rental,Pressure Washer K2,Per day,65,,
+Equipment Rental,Wet & Dry Vacuum WD 1,Per day,60,,
+Equipment Rental,Floor Dryer,Per day,60,,
+Transportation Fees & Free Services,Transportation Fee,One way,10,,
+Transportation Fees & Free Services,Transportation Fee,Two way,20,,
+Transportation Fees & Free Services,Free Services,Air Quality Check,0,,
+Transportation Fees & Free Services,Free Services,Request for Quotation,0,,
+Transportation Fees & Free Services,Free Services,Cleaning Consultation,0,,
+Transportation Fees & Free Services,Free Services,Site Visit,0,,

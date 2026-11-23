@@ -1,91 +1,233 @@
--- BEROS service catalogue, generated from supabase/seed/service-catalogue.csv.
--- Paste into Supabase → SQL Editor and Run. Safe to run again: it updates prices
--- and durations instead of creating duplicates. It never deletes anything.
+-- BEROS service catalogue — pricing review Nov 2026
+-- Source: Figma "BEROS – Pricing & Margin Review (Nov 2026)", page "Current prices (cost breakdown)".
 --
--- Mapping notes:
---   * Duration ranges ("2–3 hrs") use the upper end; "1 hr 30 min" = 1.5; "Per day"/blank = empty.
---   * Status Draft (or no price) is inserted switched off, at $0, until a price is set.
---   * Add-ons can only be limited to a category, so the two $25 add-ons apply to
---     all of Fabric & Upholstery.
+-- Paste into Supabase → SQL Editor and Run. Works on an empty catalogue and on
+-- the earlier catalogue (service-catalogue.csv): existing categories, services
+-- and variants are renamed / moved in place, so past bookings keep their links.
+-- Items no longer offered are switched off (hidden from new bookings), never
+-- deleted. Safe to run more than once.
+--
+-- Durations are hours on site per the review's "Crew × hours" column
+-- (e.g. "4 × 5 hrs" → 5). Rentals, transport fees and free services have none.
 
 begin;
 
--- Categories
-insert into public.service_categories (name, sort_order) values ('Post-Renovation', 0) on conflict (name) do update set sort_order = excluded.sort_order;
-insert into public.service_categories (name, sort_order) values ('Home', 1) on conflict (name) do update set sort_order = excluded.sort_order;
-insert into public.service_categories (name, sort_order) values ('Fabric & Upholstery', 2) on conflict (name) do update set sort_order = excluded.sort_order;
-insert into public.service_categories (name, sort_order) values ('Baby Gear', 3) on conflict (name) do update set sort_order = excluded.sort_order;
-insert into public.service_categories (name, sort_order) values ('Car', 4) on conflict (name) do update set sort_order = excluded.sort_order;
-insert into public.service_categories (name, sort_order) values ('Equipment Rental', 5) on conflict (name) do update set sort_order = excluded.sort_order;
+-- Helpers (temporary: they disappear when the session ends) ------------------
 
--- Services
-insert into public.services (category_id, name, sort_order) select id, 'Post Renovation Cleaning', 0 from public.service_categories where name = 'Post-Renovation' on conflict (category_id, name) do update set sort_order = excluded.sort_order;
-insert into public.services (category_id, name, sort_order) select id, 'Formaldehyde Removal', 1 from public.service_categories where name = 'Post-Renovation' on conflict (category_id, name) do update set sort_order = excluded.sort_order;
-insert into public.services (category_id, name, sort_order) select id, 'Floor Tile Scrubbing', 2 from public.service_categories where name = 'Post-Renovation' on conflict (category_id, name) do update set sort_order = excluded.sort_order;
-insert into public.services (category_id, name, sort_order) select id, 'Paint Stain Removal', 3 from public.service_categories where name = 'Post-Renovation' on conflict (category_id, name) do update set sort_order = excluded.sort_order;
-insert into public.services (category_id, name, sort_order) select id, 'Window Cleaning', 0 from public.service_categories where name = 'Home' on conflict (category_id, name) do update set sort_order = excluded.sort_order;
-insert into public.services (category_id, name, sort_order) select id, 'Fan Cleaning', 1 from public.service_categories where name = 'Home' on conflict (category_id, name) do update set sort_order = excluded.sort_order;
-insert into public.services (category_id, name, sort_order) select id, 'Carpet Cleaning', 0 from public.service_categories where name = 'Fabric & Upholstery' on conflict (category_id, name) do update set sort_order = excluded.sort_order;
-insert into public.services (category_id, name, sort_order) select id, 'Mattress Cleaning', 1 from public.service_categories where name = 'Fabric & Upholstery' on conflict (category_id, name) do update set sort_order = excluded.sort_order;
-insert into public.services (category_id, name, sort_order) select id, 'Curtain Cleaning', 2 from public.service_categories where name = 'Fabric & Upholstery' on conflict (category_id, name) do update set sort_order = excluded.sort_order;
-insert into public.services (category_id, name, sort_order) select id, 'Strollers/Cot Cleaning', 0 from public.service_categories where name = 'Baby Gear' on conflict (category_id, name) do update set sort_order = excluded.sort_order;
-insert into public.services (category_id, name, sort_order) select id, 'Car Fumigation & Interior Deep Cleaning', 0 from public.service_categories where name = 'Car' on conflict (category_id, name) do update set sort_order = excluded.sort_order;
-insert into public.services (category_id, name, sort_order) select id, 'Rental - Floor Scrubber', 0 from public.service_categories where name = 'Equipment Rental' on conflict (category_id, name) do update set sort_order = excluded.sort_order;
-insert into public.services (category_id, name, sort_order) select id, 'Rental - Extraction Cleaner Puzzi 10/1', 1 from public.service_categories where name = 'Equipment Rental' on conflict (category_id, name) do update set sort_order = excluded.sort_order;
-insert into public.services (category_id, name, sort_order) select id, 'Rental - Steam Cleaner SC2', 2 from public.service_categories where name = 'Equipment Rental' on conflict (category_id, name) do update set sort_order = excluded.sort_order;
-insert into public.services (category_id, name, sort_order) select id, 'Rental - Pressure Washer K2', 3 from public.service_categories where name = 'Equipment Rental' on conflict (category_id, name) do update set sort_order = excluded.sort_order;
-insert into public.services (category_id, name, sort_order) select id, 'Rental - Wet & Dry Vacuum WD 1', 4 from public.service_categories where name = 'Equipment Rental' on conflict (category_id, name) do update set sort_order = excluded.sort_order;
+-- Find a category by its new name or any old name; rename it, or create it.
+create or replace function pg_temp.ensure_category(p_name text, p_sort int, p_old text[] default '{}')
+returns uuid language plpgsql as $$
+declare v_id uuid;
+begin
+  select id into v_id from public.service_categories where name = p_name;
+  if v_id is null then
+    select id into v_id from public.service_categories where name = any(p_old) order by array_position(p_old, name) limit 1;
+  end if;
+  if v_id is null then
+    insert into public.service_categories (name, sort_order, active) values (p_name, p_sort, true) returning id into v_id;
+  else
+    update public.service_categories set name = p_name, sort_order = p_sort, active = true where id = v_id;
+  end if;
+  return v_id;
+end $$;
 
--- Variants (name, price, estimated hours, active)
-insert into public.service_variants (service_id, name, price, duration_hours, active, sort_order) select s.id, '2-Room Flexi', 370, 3.0, true, 0 from public.services s join public.service_categories c on c.id = s.category_id where c.name = 'Post-Renovation' and s.name = 'Post Renovation Cleaning' on conflict (service_id, name) do update set price = excluded.price, duration_hours = excluded.duration_hours, active = excluded.active, sort_order = excluded.sort_order;
-insert into public.service_variants (service_id, name, price, duration_hours, active, sort_order) select s.id, '2-Room Standard', 390, 3.0, true, 1 from public.services s join public.service_categories c on c.id = s.category_id where c.name = 'Post-Renovation' and s.name = 'Post Renovation Cleaning' on conflict (service_id, name) do update set price = excluded.price, duration_hours = excluded.duration_hours, active = excluded.active, sort_order = excluded.sort_order;
-insert into public.service_variants (service_id, name, price, duration_hours, active, sort_order) select s.id, '3-Room', 460, 5.0, true, 2 from public.services s join public.service_categories c on c.id = s.category_id where c.name = 'Post-Renovation' and s.name = 'Post Renovation Cleaning' on conflict (service_id, name) do update set price = excluded.price, duration_hours = excluded.duration_hours, active = excluded.active, sort_order = excluded.sort_order;
-insert into public.service_variants (service_id, name, price, duration_hours, active, sort_order) select s.id, '4-Room', 560, 5.0, true, 3 from public.services s join public.service_categories c on c.id = s.category_id where c.name = 'Post-Renovation' and s.name = 'Post Renovation Cleaning' on conflict (service_id, name) do update set price = excluded.price, duration_hours = excluded.duration_hours, active = excluded.active, sort_order = excluded.sort_order;
-insert into public.service_variants (service_id, name, price, duration_hours, active, sort_order) select s.id, '5-Room', 650, 6.0, true, 4 from public.services s join public.service_categories c on c.id = s.category_id where c.name = 'Post-Renovation' and s.name = 'Post Renovation Cleaning' on conflict (service_id, name) do update set price = excluded.price, duration_hours = excluded.duration_hours, active = excluded.active, sort_order = excluded.sort_order;
-insert into public.service_variants (service_id, name, price, duration_hours, active, sort_order) select s.id, 'Jumbo / EA', 760, 7.0, true, 5 from public.services s join public.service_categories c on c.id = s.category_id where c.name = 'Post-Renovation' and s.name = 'Post Renovation Cleaning' on conflict (service_id, name) do update set price = excluded.price, duration_hours = excluded.duration_hours, active = excluded.active, sort_order = excluded.sort_order;
-insert into public.service_variants (service_id, name, price, duration_hours, active, sort_order) select s.id, 'Maisonette', 850, 7.0, true, 6 from public.services s join public.service_categories c on c.id = s.category_id where c.name = 'Post-Renovation' and s.name = 'Post Renovation Cleaning' on conflict (service_id, name) do update set price = excluded.price, duration_hours = excluded.duration_hours, active = excluded.active, sort_order = excluded.sort_order;
-insert into public.service_variants (service_id, name, price, duration_hours, active, sort_order) select s.id, '2-Room Flexi', 360, null, true, 0 from public.services s join public.service_categories c on c.id = s.category_id where c.name = 'Post-Renovation' and s.name = 'Formaldehyde Removal' on conflict (service_id, name) do update set price = excluded.price, duration_hours = excluded.duration_hours, active = excluded.active, sort_order = excluded.sort_order;
-insert into public.service_variants (service_id, name, price, duration_hours, active, sort_order) select s.id, '2-Room Standard', 370, null, true, 1 from public.services s join public.service_categories c on c.id = s.category_id where c.name = 'Post-Renovation' and s.name = 'Formaldehyde Removal' on conflict (service_id, name) do update set price = excluded.price, duration_hours = excluded.duration_hours, active = excluded.active, sort_order = excluded.sort_order;
-insert into public.service_variants (service_id, name, price, duration_hours, active, sort_order) select s.id, '3-Room', 410, null, true, 2 from public.services s join public.service_categories c on c.id = s.category_id where c.name = 'Post-Renovation' and s.name = 'Formaldehyde Removal' on conflict (service_id, name) do update set price = excluded.price, duration_hours = excluded.duration_hours, active = excluded.active, sort_order = excluded.sort_order;
-insert into public.service_variants (service_id, name, price, duration_hours, active, sort_order) select s.id, '4-Room', 470, null, true, 3 from public.services s join public.service_categories c on c.id = s.category_id where c.name = 'Post-Renovation' and s.name = 'Formaldehyde Removal' on conflict (service_id, name) do update set price = excluded.price, duration_hours = excluded.duration_hours, active = excluded.active, sort_order = excluded.sort_order;
-insert into public.service_variants (service_id, name, price, duration_hours, active, sort_order) select s.id, '5-Room', 520, null, true, 4 from public.services s join public.service_categories c on c.id = s.category_id where c.name = 'Post-Renovation' and s.name = 'Formaldehyde Removal' on conflict (service_id, name) do update set price = excluded.price, duration_hours = excluded.duration_hours, active = excluded.active, sort_order = excluded.sort_order;
-insert into public.service_variants (service_id, name, price, duration_hours, active, sort_order) select s.id, 'Jumbo / EA', 590, null, true, 5 from public.services s join public.service_categories c on c.id = s.category_id where c.name = 'Post-Renovation' and s.name = 'Formaldehyde Removal' on conflict (service_id, name) do update set price = excluded.price, duration_hours = excluded.duration_hours, active = excluded.active, sort_order = excluded.sort_order;
-insert into public.service_variants (service_id, name, price, duration_hours, active, sort_order) select s.id, 'Maisonette', 640, null, true, 6 from public.services s join public.service_categories c on c.id = s.category_id where c.name = 'Post-Renovation' and s.name = 'Formaldehyde Removal' on conflict (service_id, name) do update set price = excluded.price, duration_hours = excluded.duration_hours, active = excluded.active, sort_order = excluded.sort_order;
-insert into public.service_variants (service_id, name, price, duration_hours, active, sort_order) select s.id, '2-Room Flexi', 360, null, true, 0 from public.services s join public.service_categories c on c.id = s.category_id where c.name = 'Post-Renovation' and s.name = 'Floor Tile Scrubbing' on conflict (service_id, name) do update set price = excluded.price, duration_hours = excluded.duration_hours, active = excluded.active, sort_order = excluded.sort_order;
-insert into public.service_variants (service_id, name, price, duration_hours, active, sort_order) select s.id, '2-Room Standard', 370, null, true, 1 from public.services s join public.service_categories c on c.id = s.category_id where c.name = 'Post-Renovation' and s.name = 'Floor Tile Scrubbing' on conflict (service_id, name) do update set price = excluded.price, duration_hours = excluded.duration_hours, active = excluded.active, sort_order = excluded.sort_order;
-insert into public.service_variants (service_id, name, price, duration_hours, active, sort_order) select s.id, '3-Room', 410, null, true, 2 from public.services s join public.service_categories c on c.id = s.category_id where c.name = 'Post-Renovation' and s.name = 'Floor Tile Scrubbing' on conflict (service_id, name) do update set price = excluded.price, duration_hours = excluded.duration_hours, active = excluded.active, sort_order = excluded.sort_order;
-insert into public.service_variants (service_id, name, price, duration_hours, active, sort_order) select s.id, '4-Room', 470, null, true, 3 from public.services s join public.service_categories c on c.id = s.category_id where c.name = 'Post-Renovation' and s.name = 'Floor Tile Scrubbing' on conflict (service_id, name) do update set price = excluded.price, duration_hours = excluded.duration_hours, active = excluded.active, sort_order = excluded.sort_order;
-insert into public.service_variants (service_id, name, price, duration_hours, active, sort_order) select s.id, '5-Room', 520, null, true, 4 from public.services s join public.service_categories c on c.id = s.category_id where c.name = 'Post-Renovation' and s.name = 'Floor Tile Scrubbing' on conflict (service_id, name) do update set price = excluded.price, duration_hours = excluded.duration_hours, active = excluded.active, sort_order = excluded.sort_order;
-insert into public.service_variants (service_id, name, price, duration_hours, active, sort_order) select s.id, 'Jumbo / EA', 590, null, true, 5 from public.services s join public.service_categories c on c.id = s.category_id where c.name = 'Post-Renovation' and s.name = 'Floor Tile Scrubbing' on conflict (service_id, name) do update set price = excluded.price, duration_hours = excluded.duration_hours, active = excluded.active, sort_order = excluded.sort_order;
-insert into public.service_variants (service_id, name, price, duration_hours, active, sort_order) select s.id, 'Maisonette', 640, null, true, 6 from public.services s join public.service_categories c on c.id = s.category_id where c.name = 'Post-Renovation' and s.name = 'Floor Tile Scrubbing' on conflict (service_id, name) do update set price = excluded.price, duration_hours = excluded.duration_hours, active = excluded.active, sort_order = excluded.sort_order;
-insert into public.service_variants (service_id, name, price, duration_hours, active, sort_order) select s.id, '2 hrs', 160, 2.0, true, 0 from public.services s join public.service_categories c on c.id = s.category_id where c.name = 'Post-Renovation' and s.name = 'Paint Stain Removal' on conflict (service_id, name) do update set price = excluded.price, duration_hours = excluded.duration_hours, active = excluded.active, sort_order = excluded.sort_order;
-insert into public.service_variants (service_id, name, price, duration_hours, active, sort_order) select s.id, '4 hrs', 320, 4.0, true, 1 from public.services s join public.service_categories c on c.id = s.category_id where c.name = 'Post-Renovation' and s.name = 'Paint Stain Removal' on conflict (service_id, name) do update set price = excluded.price, duration_hours = excluded.duration_hours, active = excluded.active, sort_order = excluded.sort_order;
-insert into public.service_variants (service_id, name, price, duration_hours, active, sort_order) select s.id, '6 hrs (max)', 480, 6.0, true, 2 from public.services s join public.service_categories c on c.id = s.category_id where c.name = 'Post-Renovation' and s.name = 'Paint Stain Removal' on conflict (service_id, name) do update set price = excluded.price, duration_hours = excluded.duration_hours, active = excluded.active, sort_order = excluded.sort_order;
-insert into public.service_variants (service_id, name, price, duration_hours, active, sort_order) select s.id, 'Bedrooms', 180, 3.0, true, 0 from public.services s join public.service_categories c on c.id = s.category_id where c.name = 'Home' and s.name = 'Window Cleaning' on conflict (service_id, name) do update set price = excluded.price, duration_hours = excluded.duration_hours, active = excluded.active, sort_order = excluded.sort_order;
-insert into public.service_variants (service_id, name, price, duration_hours, active, sort_order) select s.id, 'Flat Living Room', 240, 3.0, true, 1 from public.services s join public.service_categories c on c.id = s.category_id where c.name = 'Home' and s.name = 'Window Cleaning' on conflict (service_id, name) do update set price = excluded.price, duration_hours = excluded.duration_hours, active = excluded.active, sort_order = excluded.sort_order;
-insert into public.service_variants (service_id, name, price, duration_hours, active, sort_order) select s.id, 'Standard', 120, 2.0, true, 0 from public.services s join public.service_categories c on c.id = s.category_id where c.name = 'Home' and s.name = 'Fan Cleaning' on conflict (service_id, name) do update set price = excluded.price, duration_hours = excluded.duration_hours, active = excluded.active, sort_order = excluded.sort_order;
-insert into public.service_variants (service_id, name, price, duration_hours, active, sort_order) select s.id, 'Up to 250cm - Standard', 120, 3.0, true, 0 from public.services s join public.service_categories c on c.id = s.category_id where c.name = 'Fabric & Upholstery' and s.name = 'Carpet Cleaning' on conflict (service_id, name) do update set price = excluded.price, duration_hours = excluded.duration_hours, active = excluded.active, sort_order = excluded.sort_order;
-insert into public.service_variants (service_id, name, price, duration_hours, active, sort_order) select s.id, 'Up to 300cm - Large', 150, 3.0, true, 1 from public.services s join public.service_categories c on c.id = s.category_id where c.name = 'Fabric & Upholstery' and s.name = 'Carpet Cleaning' on conflict (service_id, name) do update set price = excluded.price, duration_hours = excluded.duration_hours, active = excluded.active, sort_order = excluded.sort_order;
-insert into public.service_variants (service_id, name, price, duration_hours, active, sort_order) select s.id, 'Up to 350cm - Extra Large', 180, 3.0, true, 2 from public.services s join public.service_categories c on c.id = s.category_id where c.name = 'Fabric & Upholstery' and s.name = 'Carpet Cleaning' on conflict (service_id, name) do update set price = excluded.price, duration_hours = excluded.duration_hours, active = excluded.active, sort_order = excluded.sort_order;
-insert into public.service_variants (service_id, name, price, duration_hours, active, sort_order) select s.id, 'Kitchen Runner', 110, 2.0, true, 3 from public.services s join public.service_categories c on c.id = s.category_id where c.name = 'Fabric & Upholstery' and s.name = 'Carpet Cleaning' on conflict (service_id, name) do update set price = excluded.price, duration_hours = excluded.duration_hours, active = excluded.active, sort_order = excluded.sort_order;
-insert into public.service_variants (service_id, name, price, duration_hours, active, sort_order) select s.id, 'Baby Cot Mattress', 110, 1.5, true, 0 from public.services s join public.service_categories c on c.id = s.category_id where c.name = 'Fabric & Upholstery' and s.name = 'Mattress Cleaning' on conflict (service_id, name) do update set price = excluded.price, duration_hours = excluded.duration_hours, active = excluded.active, sort_order = excluded.sort_order;
-insert into public.service_variants (service_id, name, price, duration_hours, active, sort_order) select s.id, 'Single / Super Single', 120, 1.5, true, 1 from public.services s join public.service_categories c on c.id = s.category_id where c.name = 'Fabric & Upholstery' and s.name = 'Mattress Cleaning' on conflict (service_id, name) do update set price = excluded.price, duration_hours = excluded.duration_hours, active = excluded.active, sort_order = excluded.sort_order;
-insert into public.service_variants (service_id, name, price, duration_hours, active, sort_order) select s.id, 'Queen / King', 150, 1.5, true, 2 from public.services s join public.service_categories c on c.id = s.category_id where c.name = 'Fabric & Upholstery' and s.name = 'Mattress Cleaning' on conflict (service_id, name) do update set price = excluded.price, duration_hours = excluded.duration_hours, active = excluded.active, sort_order = excluded.sort_order;
-insert into public.service_variants (service_id, name, price, duration_hours, active, sort_order) select s.id, 'Curtains – Steam Clean (per pc)', 150, 1.5, true, 0 from public.services s join public.service_categories c on c.id = s.category_id where c.name = 'Fabric & Upholstery' and s.name = 'Curtain Cleaning' on conflict (service_id, name) do update set price = excluded.price, duration_hours = excluded.duration_hours, active = excluded.active, sort_order = excluded.sort_order;
-insert into public.service_variants (service_id, name, price, duration_hours, active, sort_order) select s.id, 'Blinds (per pc)', 180, 1.5, true, 1 from public.services s join public.service_categories c on c.id = s.category_id where c.name = 'Fabric & Upholstery' and s.name = 'Curtain Cleaning' on conflict (service_id, name) do update set price = excluded.price, duration_hours = excluded.duration_hours, active = excluded.active, sort_order = excluded.sort_order;
-insert into public.service_variants (service_id, name, price, duration_hours, active, sort_order) select s.id, 'Car Baby Seat', 85, 1.5, true, 0 from public.services s join public.service_categories c on c.id = s.category_id where c.name = 'Baby Gear' and s.name = 'Strollers/Cot Cleaning' on conflict (service_id, name) do update set price = excluded.price, duration_hours = excluded.duration_hours, active = excluded.active, sort_order = excluded.sort_order;
-insert into public.service_variants (service_id, name, price, duration_hours, active, sort_order) select s.id, 'Stroller', 95, 1.5, true, 1 from public.services s join public.service_categories c on c.id = s.category_id where c.name = 'Baby Gear' and s.name = 'Strollers/Cot Cleaning' on conflict (service_id, name) do update set price = excluded.price, duration_hours = excluded.duration_hours, active = excluded.active, sort_order = excluded.sort_order;
-insert into public.service_variants (service_id, name, price, duration_hours, active, sort_order) select s.id, 'Baby Cot', 120, 1.5, true, 2 from public.services s join public.service_categories c on c.id = s.category_id where c.name = 'Baby Gear' and s.name = 'Strollers/Cot Cleaning' on conflict (service_id, name) do update set price = excluded.price, duration_hours = excluded.duration_hours, active = excluded.active, sort_order = excluded.sort_order;
-insert into public.service_variants (service_id, name, price, duration_hours, active, sort_order) select s.id, 'Fumigation Only', 85, 1.5, true, 0 from public.services s join public.service_categories c on c.id = s.category_id where c.name = 'Car' and s.name = 'Car Fumigation & Interior Deep Cleaning' on conflict (service_id, name) do update set price = excluded.price, duration_hours = excluded.duration_hours, active = excluded.active, sort_order = excluded.sort_order;
-insert into public.service_variants (service_id, name, price, duration_hours, active, sort_order) select s.id, 'Car Mat Cleaning', 0, null, false, 1 from public.services s join public.service_categories c on c.id = s.category_id where c.name = 'Car' and s.name = 'Car Fumigation & Interior Deep Cleaning' on conflict (service_id, name) do update set price = excluded.price, duration_hours = excluded.duration_hours, active = excluded.active, sort_order = excluded.sort_order;
-insert into public.service_variants (service_id, name, price, duration_hours, active, sort_order) select s.id, 'Per day', 300, null, true, 0 from public.services s join public.service_categories c on c.id = s.category_id where c.name = 'Equipment Rental' and s.name = 'Rental - Floor Scrubber' on conflict (service_id, name) do update set price = excluded.price, duration_hours = excluded.duration_hours, active = excluded.active, sort_order = excluded.sort_order;
-insert into public.service_variants (service_id, name, price, duration_hours, active, sort_order) select s.id, 'Base rate', 110, null, true, 0 from public.services s join public.service_categories c on c.id = s.category_id where c.name = 'Equipment Rental' and s.name = 'Rental - Extraction Cleaner Puzzi 10/1' on conflict (service_id, name) do update set price = excluded.price, duration_hours = excluded.duration_hours, active = excluded.active, sort_order = excluded.sort_order;
-insert into public.service_variants (service_id, name, price, duration_hours, active, sort_order) select s.id, 'Base rate', 90, null, true, 0 from public.services s join public.service_categories c on c.id = s.category_id where c.name = 'Equipment Rental' and s.name = 'Rental - Steam Cleaner SC2' on conflict (service_id, name) do update set price = excluded.price, duration_hours = excluded.duration_hours, active = excluded.active, sort_order = excluded.sort_order;
-insert into public.service_variants (service_id, name, price, duration_hours, active, sort_order) select s.id, 'Base rate', 65, null, true, 0 from public.services s join public.service_categories c on c.id = s.category_id where c.name = 'Equipment Rental' and s.name = 'Rental - Pressure Washer K2' on conflict (service_id, name) do update set price = excluded.price, duration_hours = excluded.duration_hours, active = excluded.active, sort_order = excluded.sort_order;
-insert into public.service_variants (service_id, name, price, duration_hours, active, sort_order) select s.id, 'Base rate', 60, null, true, 0 from public.services s join public.service_categories c on c.id = s.category_id where c.name = 'Equipment Rental' and s.name = 'Rental - Wet & Dry Vacuum WD 1' on conflict (service_id, name) do update set price = excluded.price, duration_hours = excluded.duration_hours, active = excluded.active, sort_order = excluded.sort_order;
+-- Find a service (in any category) by its new name or an old name; rename and
+-- move it into p_cat, or create it.
+create or replace function pg_temp.ensure_service(p_cat text, p_name text, p_sort int, p_old text[] default '{}')
+returns uuid language plpgsql as $$
+declare v_cat uuid; v_id uuid;
+begin
+  select id into v_cat from public.service_categories where name = p_cat;
+  select id into v_id from public.services where category_id = v_cat and name = p_name;
+  if v_id is null then
+    select id into v_id from public.services where name = p_name order by active desc limit 1;
+  end if;
+  if v_id is null then
+    select id into v_id from public.services where name = any(p_old) order by array_position(p_old, name), active desc limit 1;
+  end if;
+  if v_id is null then
+    insert into public.services (category_id, name, sort_order, active) values (v_cat, p_name, p_sort, true) returning id into v_id;
+  else
+    update public.services set category_id = v_cat, name = p_name, sort_order = p_sort, active = true where id = v_id;
+  end if;
+  return v_id;
+end $$;
 
--- Add-ons (limited to the category of the services marked TRUE in the sheet)
-insert into public.add_ons (category_id, name, price, sort_order) select id, 'Fabric Protector Spray', 25, 0 from public.service_categories where name = 'Fabric & Upholstery' on conflict (name) do update set category_id = excluded.category_id, price = excluded.price;
-insert into public.add_ons (category_id, name, price, sort_order) select id, 'Disinfect & Sanitize', 25, 1 from public.service_categories where name = 'Fabric & Upholstery' on conflict (name) do update set category_id = excluded.category_id, price = excluded.price;
+-- Find a variant of the service by its new name or an old name; update it, or create it.
+create or replace function pg_temp.ensure_variant(p_cat text, p_service text, p_name text, p_price numeric, p_hours numeric, p_sort int, p_old text[] default '{}')
+returns void language plpgsql as $$
+declare v_svc uuid; v_id uuid;
+begin
+  select s.id into v_svc from public.services s join public.service_categories c on c.id = s.category_id
+  where c.name = p_cat and s.name = p_service;
+  select id into v_id from public.service_variants where service_id = v_svc and name = p_name;
+  if v_id is null then
+    select id into v_id from public.service_variants where service_id = v_svc and name = any(p_old)
+    order by array_position(p_old, name) limit 1;
+  end if;
+  if v_id is null then
+    insert into public.service_variants (service_id, name, price, duration_hours, active, sort_order)
+    values (v_svc, p_name, p_price, p_hours, true, p_sort);
+  else
+    update public.service_variants
+    set name = p_name, price = p_price, duration_hours = p_hours, active = true, sort_order = p_sort
+    where id = v_id;
+  end if;
+end $$;
+
+-- 1. Categories ---------------------------------------------------------------
+
+select pg_temp.ensure_category('Moving In BTO Flats', 0, array['Post-Renovation']);
+select pg_temp.ensure_category('Fabric & Leather Care', 1, array['Fabric & Upholstery']);
+select pg_temp.ensure_category('Car & Baby Gear', 2, array['Baby Gear']);
+select pg_temp.ensure_category('Equipment Rental', 3);
+select pg_temp.ensure_category('Transportation Fees & Free Services', 4);
+
+-- 2. Moving In BTO Flats ------------------------------------------------------
+
+select pg_temp.ensure_service('Moving In BTO Flats', 'Post Renovation Cleaning', 0);
+select pg_temp.ensure_variant('Moving In BTO Flats', 'Post Renovation Cleaning', '2-Room Flexi',    370, 2.5, 0);
+select pg_temp.ensure_variant('Moving In BTO Flats', 'Post Renovation Cleaning', '2-Room Standard', 390, 2.5, 1);
+select pg_temp.ensure_variant('Moving In BTO Flats', 'Post Renovation Cleaning', '3-Room',          460, 3,   2);
+select pg_temp.ensure_variant('Moving In BTO Flats', 'Post Renovation Cleaning', '4-Room',          560, 5,   3);
+select pg_temp.ensure_variant('Moving In BTO Flats', 'Post Renovation Cleaning', '5-Room',          650, 5,   4);
+select pg_temp.ensure_variant('Moving In BTO Flats', 'Post Renovation Cleaning', 'Jumbo / EA',      840, 6,   5);
+select pg_temp.ensure_variant('Moving In BTO Flats', 'Post Renovation Cleaning', 'Maisonette',      920, 6,   6);
+
+select pg_temp.ensure_service('Moving In BTO Flats', 'Formaldehyde Removal', 1);
+select pg_temp.ensure_variant('Moving In BTO Flats', 'Formaldehyde Removal', '2-Room Flexi',    250, 1.5, 0);
+select pg_temp.ensure_variant('Moving In BTO Flats', 'Formaldehyde Removal', '2-Room Standard', 250, 1.5, 1);
+select pg_temp.ensure_variant('Moving In BTO Flats', 'Formaldehyde Removal', '3-Room',          295, 2,   2);
+select pg_temp.ensure_variant('Moving In BTO Flats', 'Formaldehyde Removal', '4-Room',          340, 2.5, 3);
+select pg_temp.ensure_variant('Moving In BTO Flats', 'Formaldehyde Removal', '5-Room',          380, 3,   4);
+select pg_temp.ensure_variant('Moving In BTO Flats', 'Formaldehyde Removal', 'Jumbo / EA',      430, 3.5, 5);
+select pg_temp.ensure_variant('Moving In BTO Flats', 'Formaldehyde Removal', 'Maisonette',      430, 3.5, 6);
+
+select pg_temp.ensure_service('Moving In BTO Flats', 'Floor Tile Scrubbing', 2);
+select pg_temp.ensure_variant('Moving In BTO Flats', 'Floor Tile Scrubbing', '2-Room Flexi',    230, 2,   0);
+select pg_temp.ensure_variant('Moving In BTO Flats', 'Floor Tile Scrubbing', '2-Room Standard', 230, 2,   1);
+select pg_temp.ensure_variant('Moving In BTO Flats', 'Floor Tile Scrubbing', '3-Room',          330, 3,   2);
+select pg_temp.ensure_variant('Moving In BTO Flats', 'Floor Tile Scrubbing', '4-Room',          380, 3.5, 3);
+select pg_temp.ensure_variant('Moving In BTO Flats', 'Floor Tile Scrubbing', '5-Room',          430, 4,   4);
+select pg_temp.ensure_variant('Moving In BTO Flats', 'Floor Tile Scrubbing', 'Jumbo / EA',      480, 4.5, 5);
+select pg_temp.ensure_variant('Moving In BTO Flats', 'Floor Tile Scrubbing', 'Maisonette',      530, 5,   6);
+
+select pg_temp.ensure_service('Moving In BTO Flats', 'Paint Stain Removal', 3);
+select pg_temp.ensure_variant('Moving In BTO Flats', 'Paint Stain Removal', '2 hrs',       160, 2, 0);
+select pg_temp.ensure_variant('Moving In BTO Flats', 'Paint Stain Removal', '4 hrs',       320, 4, 1);
+select pg_temp.ensure_variant('Moving In BTO Flats', 'Paint Stain Removal', '6 hrs (max)', 480, 6, 2);
+
+select pg_temp.ensure_service('Moving In BTO Flats', 'Window Cleaning', 4);
+select pg_temp.ensure_variant('Moving In BTO Flats', 'Window Cleaning', 'Bedrooms',         180, 2.5, 0);
+select pg_temp.ensure_variant('Moving In BTO Flats', 'Window Cleaning', 'Flat Living Room', 240, 2.5, 1);
+
+select pg_temp.ensure_service('Moving In BTO Flats', 'Fan Cleaning', 5);
+select pg_temp.ensure_variant('Moving In BTO Flats', 'Fan Cleaning', 'Standard', 120, 1.5, 0);
+
+-- 3. Fabric & Leather Care ----------------------------------------------------
+
+select pg_temp.ensure_service('Fabric & Leather Care', 'Sofa Cleaning', 0);
+select pg_temp.ensure_variant('Fabric & Leather Care', 'Sofa Cleaning', '1–3 Seater – Small',  120, 1.5, 0);
+select pg_temp.ensure_variant('Fabric & Leather Care', 'Sofa Cleaning', '1–3 Seater – Big',    150, 1.5, 1);
+select pg_temp.ensure_variant('Fabric & Leather Care', 'Sofa Cleaning', '4–5 Seater – Small',  180, 2.5, 2);
+select pg_temp.ensure_variant('Fabric & Leather Care', 'Sofa Cleaning', '4–5 Seater – Big',    210, 2.5, 3);
+select pg_temp.ensure_variant('Fabric & Leather Care', 'Sofa Cleaning', '6–9 Seater – Small',  250, 3.5, 4);
+select pg_temp.ensure_variant('Fabric & Leather Care', 'Sofa Cleaning', '6–9 Seater – Big',    290, 3.5, 5);
+select pg_temp.ensure_variant('Fabric & Leather Care', 'Sofa Cleaning', 'L-Shape – Small',     200, 2.5, 6);
+select pg_temp.ensure_variant('Fabric & Leather Care', 'Sofa Cleaning', 'L-Shape – Big',       270, 3.5, 7);
+select pg_temp.ensure_variant('Fabric & Leather Care', 'Sofa Cleaning', 'U-Shape',             320, 3.5, 8);
+select pg_temp.ensure_variant('Fabric & Leather Care', 'Sofa Cleaning', 'Ottoman / Footstool',  50, 0.5, 9);
+
+select pg_temp.ensure_service('Fabric & Leather Care', 'Carpet Cleaning', 1);
+select pg_temp.ensure_variant('Fabric & Leather Care', 'Carpet Cleaning', 'Up to 250cm',    120, 1.5, 0, array['Up to 250cm - Standard']);
+select pg_temp.ensure_variant('Fabric & Leather Care', 'Carpet Cleaning', 'Up to 300cm',    150, 2,   1, array['Up to 300cm - Large']);
+select pg_temp.ensure_variant('Fabric & Leather Care', 'Carpet Cleaning', 'Up to 350cm',    180, 2,   2, array['Up to 350cm - Extra Large']);
+select pg_temp.ensure_variant('Fabric & Leather Care', 'Carpet Cleaning', 'Kitchen Runner', 110, 1.5, 3);
+
+select pg_temp.ensure_service('Fabric & Leather Care', 'Mattress Cleaning', 2);
+select pg_temp.ensure_variant('Fabric & Leather Care', 'Mattress Cleaning', 'Baby Cot Mattress',     110, 1.5, 0);
+select pg_temp.ensure_variant('Fabric & Leather Care', 'Mattress Cleaning', 'Single / Super Single', 120, 1.5, 1);
+select pg_temp.ensure_variant('Fabric & Leather Care', 'Mattress Cleaning', 'Queen / King',          150, 1.5, 2);
+select pg_temp.ensure_variant('Fabric & Leather Care', 'Mattress Cleaning', 'Baby Cot',              120, 1,   3);
+
+select pg_temp.ensure_service('Fabric & Leather Care', 'Curtain Steam Cleaning', 3, array['Curtain Cleaning']);
+select pg_temp.ensure_variant('Fabric & Leather Care', 'Curtain Steam Cleaning', 'Curtains (per pc)', 150, 0.5, 0, array['Curtains – Steam Clean (per pc)']);
+select pg_temp.ensure_variant('Fabric & Leather Care', 'Curtain Steam Cleaning', 'Blinds (per pc)',   180, 0.5, 1);
+
+-- 4. Car & Baby Gear (pick up & delivery) -------------------------------------
+
+select pg_temp.ensure_service('Car & Baby Gear', 'Car Mat Cleaning', 0);
+select pg_temp.ensure_variant('Car & Baby Gear', 'Car Mat Cleaning', '2–4 Seater', 120, 1,   0);
+select pg_temp.ensure_variant('Car & Baby Gear', 'Car Mat Cleaning', '5–7 Seater', 150, 1.5, 1);
+
+select pg_temp.ensure_service('Car & Baby Gear', 'Baby Gear Cleaning', 1, array['Strollers/Cot Cleaning']);
+select pg_temp.ensure_variant('Car & Baby Gear', 'Baby Gear Cleaning', 'Car Baby Seat', 85, 1, 0);
+select pg_temp.ensure_variant('Car & Baby Gear', 'Baby Gear Cleaning', 'Stroller',      95, 1, 1);
+
+-- 5. Equipment Rental (per day, includes delivery and pick-up) -----------------
+
+select pg_temp.ensure_service('Equipment Rental', 'Floor Scrubber', 0, array['Rental - Floor Scrubber']);
+select pg_temp.ensure_variant('Equipment Rental', 'Floor Scrubber', 'Per day', 300, null, 0, array['Base rate']);
+select pg_temp.ensure_service('Equipment Rental', 'Extraction Cleaner Puzzi 10/1', 1, array['Rental - Extraction Cleaner Puzzi 10/1']);
+select pg_temp.ensure_variant('Equipment Rental', 'Extraction Cleaner Puzzi 10/1', 'Per day', 110, null, 0, array['Base rate']);
+select pg_temp.ensure_service('Equipment Rental', 'Steam Cleaner SC2', 2, array['Rental - Steam Cleaner SC2']);
+select pg_temp.ensure_variant('Equipment Rental', 'Steam Cleaner SC2', 'Per day', 90, null, 0, array['Base rate']);
+select pg_temp.ensure_service('Equipment Rental', 'Pressure Washer K2', 3, array['Rental - Pressure Washer K2']);
+select pg_temp.ensure_variant('Equipment Rental', 'Pressure Washer K2', 'Per day', 65, null, 0, array['Base rate']);
+select pg_temp.ensure_service('Equipment Rental', 'Wet & Dry Vacuum WD 1', 4, array['Rental - Wet & Dry Vacuum WD 1']);
+select pg_temp.ensure_variant('Equipment Rental', 'Wet & Dry Vacuum WD 1', 'Per day', 60, null, 0, array['Base rate']);
+select pg_temp.ensure_service('Equipment Rental', 'Floor Dryer', 5);
+select pg_temp.ensure_variant('Equipment Rental', 'Floor Dryer', 'Per day', 60, null, 0);
+
+-- 6. Transportation Fees & Free Services --------------------------------------
+
+select pg_temp.ensure_service('Transportation Fees & Free Services', 'Transportation Fee', 0);
+select pg_temp.ensure_variant('Transportation Fees & Free Services', 'Transportation Fee', 'One way', 10, null, 0);
+select pg_temp.ensure_variant('Transportation Fees & Free Services', 'Transportation Fee', 'Two way', 20, null, 1);
+
+select pg_temp.ensure_service('Transportation Fees & Free Services', 'Free Services', 1);
+select pg_temp.ensure_variant('Transportation Fees & Free Services', 'Free Services', 'Air Quality Check',     0, null, 0);
+select pg_temp.ensure_variant('Transportation Fees & Free Services', 'Free Services', 'Request for Quotation', 0, null, 1);
+select pg_temp.ensure_variant('Transportation Fees & Free Services', 'Free Services', 'Cleaning Consultation', 0, null, 2);
+select pg_temp.ensure_variant('Transportation Fees & Free Services', 'Free Services', 'Site Visit',            0, null, 3);
+
+-- 7. Add-ons ($25 per item, fabric & leather jobs) ----------------------------
+
+update public.add_ons set name = 'Fabric Protection Spray'
+where name = 'Fabric Protector Spray' and not exists (select 1 from public.add_ons where name = 'Fabric Protection Spray');
+insert into public.add_ons (category_id, name, price, sort_order, active)
+select c.id, a.name, 25, a.sort, true
+from public.service_categories c, (values ('Fabric Protection Spray', 0), ('Disinfect & Sanitize', 1)) as a(name, sort)
+where c.name = 'Fabric & Leather Care'
+on conflict (name) do update set category_id = excluded.category_id, price = excluded.price, sort_order = excluded.sort_order, active = true;
+
+-- 8. No longer offered: switch off (kept for past bookings) ------------------
+
+-- Car fumigation was removed; its old "Car Mat Cleaning" option is replaced by
+-- the new Car Mat Cleaning service.
+update public.services set active = false where name = 'Car Fumigation & Interior Deep Cleaning';
+update public.service_variants set active = false
+where service_id in (select id from public.services where name = 'Car Fumigation & Interior Deep Cleaning');
+
+-- Baby cot cleaning moved to Mattress Cleaning.
+update public.service_variants set active = false
+where name = 'Baby Cot' and service_id in (select id from public.services where name = 'Baby Gear Cleaning');
+
+-- Any other option of a reviewed service that isn't on the new price list.
+update public.service_variants v set active = false
+from public.services s
+where v.service_id = s.id
+  and s.name in ('Sofa Cleaning', 'Carpet Cleaning', 'Mattress Cleaning', 'Curtain Steam Cleaning')
+  and v.name not in (
+    '1–3 Seater – Small', '1–3 Seater – Big', '4–5 Seater – Small', '4–5 Seater – Big', '6–9 Seater – Small',
+    '6–9 Seater – Big', 'L-Shape – Small', 'L-Shape – Big', 'U-Shape', 'Ottoman / Footstool',
+    'Up to 250cm', 'Up to 300cm', 'Up to 350cm', 'Kitchen Runner',
+    'Baby Cot Mattress', 'Single / Super Single', 'Queen / King', 'Baby Cot',
+    'Curtains (per pc)', 'Blinds (per pc)');
+
+-- Old categories that are now empty (Home → Moving In BTO Flats, Car → Car & Baby Gear).
+update public.service_categories c set active = false, sort_order = 99
+where c.name not in ('Moving In BTO Flats', 'Fabric & Leather Care', 'Car & Baby Gear', 'Equipment Rental', 'Transportation Fees & Free Services')
+  and not exists (select 1 from public.services s where s.category_id = c.id and s.active);
 
 commit;

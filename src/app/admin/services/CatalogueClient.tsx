@@ -172,22 +172,22 @@ export function CatalogueClient({ catalogue }: { catalogue: Catalogue }) {
                     <div className="border-t border-line bg-[#fafafa] px-3 py-1 sm:px-4">
                       <div className="flex items-center gap-2 pt-2 pb-1.5 text-[11px] sm:gap-3 font-semibold tracking-[0.66px] text-faint uppercase">
                         <span className="min-w-0 flex-1 sm:pl-7">Option</span>
-                        <span className="w-8 text-right sm:w-10">Crew</span>
-                        <span className="w-10 text-right sm:w-12">Hrs</span>
-                        <span className="w-12 text-right sm:w-14">Margin</span>
-                        <span className="w-12 text-right sm:w-16">Price</span>
+                        <span className="w-8 text-center sm:w-10">Crew</span>
+                        <span className="w-10 text-center sm:w-12">Hrs</span>
+                        <span className="w-12 text-center sm:w-14">Margin</span>
+                        <span className="w-12 text-center sm:w-16">Price</span>
                       </div>
                       {vs.map((v) => (
                         <div key={v.id} className="flex items-center gap-2 border-t border-line py-2.5 text-sm sm:gap-3">
                           <span className="flex min-w-0 flex-1 flex-col sm:pl-7">
                             <span className={`${v.active ? "" : "text-muted line-through"}`}>{v.name}</span>
                           </span>
-                          <span className="w-8 text-right text-[13px] text-muted tabular-nums sm:w-10">{v.crew_count ?? "—"}</span>
-                          <span className="w-10 text-right text-[13px] text-muted tabular-nums sm:w-12">{v.duration_hours != null ? `${v.duration_hours}h` : "—"}</span>
-                          <span className="flex w-12 justify-end sm:w-14">
+                          <span className="w-8 text-center text-[13px] text-muted tabular-nums sm:w-10">{v.crew_count ?? "—"}</span>
+                          <span className="w-10 text-center text-[13px] text-muted tabular-nums sm:w-12">{v.duration_hours != null ? `${v.duration_hours}h` : "—"}</span>
+                          <span className="flex w-12 justify-center sm:w-14">
                             <MarginBadge price={v.price} cost={v.cost} />
                           </span>
-                          <span className="w-12 text-right font-semibold sm:w-16">{v.price === 0 ? "Free" : fmtMoneyShort(v.price)}</span>
+                          <span className="w-12 text-center font-semibold sm:w-16">{v.price === 0 ? "Free" : fmtMoneyShort(v.price)}</span>
                         </div>
                       ))}
                       <button type="button" onClick={() => setPanel({ service: s, addVariant: true })} className="block w-full border-t border-line py-2.5 text-left sm:pl-7 text-[13px] font-semibold">
